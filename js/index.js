@@ -34,8 +34,16 @@ import("../../throne-rs/pkg/index.js")
   .then(module => {
     module.init();
 
-    let context = module.Context.from_text(text);
-    updateLiveView(context);
+    let context = null;
+    const setContextFromEditor = () => {
+      context = module.Context.from_text(editor.getValue());
+      updateLiveView(context);
+    };
+    setContextFromEditor();
+
+    editor.onDidChangeModelContent(() => {
+      setContextFromEditor();
+    });
 
     let requestAnimationFrameId = null;
     let updateContinuously = updateCheckboxEl.checked;
@@ -78,8 +86,7 @@ import("../../throne-rs/pkg/index.js")
 
     resetButtonEl.addEventListener("click", e => {
       window.cancelAnimationFrame(requestAnimationFrameId);
-      context = module.Context.from_text(text);
-      updateLiveView(context);
+      setContextFromEditor();
     });
   })
   .catch(console.error);
