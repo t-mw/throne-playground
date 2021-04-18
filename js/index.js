@@ -131,7 +131,7 @@ function phraseToElement(phrase, depth = 0) {
   const el = document.createElement("div");
   el.setAttribute("data-depth", depth);
   el.className = "phrase";
-  el.style.backgroundColor = "#" + colorFromSeed(depth + 1);
+  el.style.backgroundColor = colorFromSeed(depth + 1);
 
   if (isAtom(phrase)) {
     el.appendChild(document.createTextNode(phrase));
@@ -149,5 +149,16 @@ function isAtom(phrase) {
 }
 
 function colorFromSeed(seed) {
-  return Math.floor((Math.abs(Math.sin(seed) * 16777215)) % 16777215).toString(16);
+  const color = Math.floor((Math.abs(Math.sin(seed) * 16777215)) % 16777215);
+
+  let r = (color >> 16) & 0xff;
+  let g = (color >> 8) & 0xff;
+  let b = color & 0xff;
+
+  // mix with white
+  r = Math.floor((r + 0xff) / 2);
+  g = Math.floor((g + 0xff) / 2);
+  b = Math.floor((b + 0xff) / 2);
+
+  return "rgb(" + r.toString() + "," + g.toString() + "," + b.toString() + ")";
 }
