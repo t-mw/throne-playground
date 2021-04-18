@@ -85,9 +85,37 @@ import("../../throne-rs/pkg/index.js")
   .catch(console.error);
 
 function updateLiveView(context) {
+  const state = context.get_state();
+
+  const compareFn = (a, b) => {
+    if (isAtom(a) != isAtom(b)) {
+      // sort atoms before phrases
+      return isAtom(a) ? -1 : 1;
+    } else if (isAtom(a)) {
+      // both are atoms
+      if (a == b) {
+        return 0;
+      } else {
+        return a < b ? -1 : 1;
+      }
+    } else {
+      // both are phrases
+      for (let i = 0; i < a.length && i < b.length; i++) {
+        const result = compareFn(a[i], b[i]);
+        if (result != 0) {
+          return result;
+        }
+      }
+
+      // phrases share common prefix
+      return a.length - b.length;
+    }
+  };
+  state.sort(compareFn);
+
   const liveViewEl = document.getElementById("live-view");
   liveViewEl.innerHTML = "";
-  context.get_state().forEach(phrase => {
+  state.forEach(phrase => {
     liveViewEl.appendChild(phraseToElement(phrase));
   });
 }
@@ -98,7 +126,7 @@ function phraseToElement(phrase, depth = 0) {
   el.className = "phrase";
   el.style.backgroundColor = "#" + colorFromSeed(depth + 1);
 
-  if (typeof(phrase) == "string" || typeof(phrase) == "number") {
+  if (isAtom(phrase)) {
     el.appendChild(document.createTextNode(phrase));
   } else {
     phrase.forEach(subPhrase => {
@@ -107,6 +135,10 @@ function phraseToElement(phrase, depth = 0) {
   }
 
   return el;
+}
+
+function isAtom(phrase) {
+  return typeof(phrase) == "string" || typeof(phrase) == "number";
 }
 
 function colorFromSeed(seed) {
