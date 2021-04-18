@@ -6,6 +6,7 @@
     "start": "rimraf dist pkg && webpack-dev-server --open -d"
   },
   "dependencies": {
+    "jsondiffpatch": "^0.4.1",
     "minireset.css": "^0.0.7",
     "monaco-editor": "^0.23.0"
   },

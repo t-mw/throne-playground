@@ -31,6 +31,16 @@ body {
   display: table;
 }
 
+.phrase.changed {
+  animation: animate-change 1s ease;
+}
+
+@keyframes animate-change {
+  50% {
+    transform: translateX(10px);
+  }
+}
+
 #controls {
   position: fixed;
   top: 0;

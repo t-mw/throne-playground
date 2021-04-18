@@ -1,5 +1,6 @@
 import "minireset.css";
 import * as monaco from "monaco-editor";
+import * as jsondiffpatch from "jsondiffpatch";
 import "../css/style.css";
 
 const text = `\
@@ -35,9 +36,49 @@ import("../../throne-rs/pkg/index.js")
     module.init();
 
     let context = null;
+    let previousState = null;
+    const updateLiveViewWithDiff = (context) => {
+      if (context == null) {
+        return;
+      }
+
+      const state = context.get_state();
+      const compareTokensFn = (a, b) => {
+        if (isAtom(a) != isAtom(b)) {
+          // sort atoms before phrases
+          return isAtom(a) ? -1 : 1;
+        } else if (isAtom(a)) {
+          // both are atoms
+          if (a == b) {
+            return 0;
+          } else {
+            return a < b ? -1 : 1;
+          }
+        } else {
+          // both are phrases
+          for (let i = 0; i < a.length && i < b.length; i++) {
+            const result = compareTokensFn(a[i], b[i]);
+            if (result != 0) {
+              return result;
+            }
+          }
+
+          // phrases share common prefix
+          return a.length - b.length;
+        }
+      };
+
+      state.sort((a, b) => {
+        compareTokensFn(a, b);
+      });
+
+      updateLiveView(state, previousState);
+      previousState = state;
+    };
+
     const setContextFromEditor = () => {
       context = module.Context.from_text(editor.getValue());
-      updateLiveView(context);
+      updateLiveViewWithDiff(context);
     };
     setContextFromEditor();
 
@@ -69,7 +110,7 @@ import("../../throne-rs/pkg/index.js")
           if (frameTimer < 0) {
             frameTimer += updateFreq;
             context.update();
-            updateLiveView(context);
+            updateLiveViewWithDiff(context);
           }
 
           if (updateContinuously) {
@@ -80,7 +121,7 @@ import("../../throne-rs/pkg/index.js")
         requestAnimationFrameId = window.requestAnimationFrame(step);
       } else {
         context.update();
-        updateLiveView(context);
+        updateLiveViewWithDiff(context);
       }
     });
 
@@ -91,53 +132,37 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
-function updateLiveView(context) {
-  const state = context.get_state();
-
-  const compareFn = (a, b) => {
-    if (isAtom(a) != isAtom(b)) {
-      // sort atoms before phrases
-      return isAtom(a) ? -1 : 1;
-    } else if (isAtom(a)) {
-      // both are atoms
-      if (a == b) {
-        return 0;
-      } else {
-        return a < b ? -1 : 1;
-      }
-    } else {
-      // both are phrases
-      for (let i = 0; i < a.length && i < b.length; i++) {
-        const result = compareFn(a[i], b[i]);
-        if (result != 0) {
-          return result;
-        }
-      }
-
-      // phrases share common prefix
-      return a.length - b.length;
-    }
-  };
-  state.sort(compareFn);
+function updateLiveView(state, previousState) {
+  let deltas = {};
+  if (previousState != null) {
+    // see https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+    // TODO: generate hashes for array elements for better deltas:
+    //   https://github.com/benjamine/jsondiffpatch/blob/master/docs/arrays.md
+    deltas = jsondiffpatch.diff(previousState, state) || deltas;
+  }
 
   const liveViewEl = document.getElementById("live-view");
   liveViewEl.innerHTML = "";
-  state.forEach(phrase => {
-    liveViewEl.appendChild(phraseToElement(phrase));
+  state.forEach((phrase, i) => {
+    const el = phraseToElement(phrase);
+    if (deltas[i]) {
+      el.classList.add("changed");
+    }
+    liveViewEl.appendChild(el);
   });
 }
 
-function phraseToElement(phrase, depth = 0) {
+function phraseToElement(phraseTokens, depth = 0) {
   const el = document.createElement("div");
   el.setAttribute("data-depth", depth);
   el.className = "phrase";
   el.style.backgroundColor = colorFromSeed(depth + 1);
 
-  if (isAtom(phrase)) {
-    el.appendChild(document.createTextNode(phrase));
+  if (isAtom(phraseTokens)) {
+    el.appendChild(document.createTextNode(phraseTokens));
   } else {
-    phrase.forEach(subPhrase => {
-      el.appendChild(phraseToElement(subPhrase, depth + 1));
+    phraseTokens.forEach(subPhraseTokens => {
+      el.appendChild(phraseToElement(subPhraseTokens, depth + 1));
     })
   }
 
