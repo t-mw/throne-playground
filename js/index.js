@@ -43,6 +43,11 @@ import("../../throne-rs/pkg/index.js")
       }
 
       const state = context.get_state();
+      const hashes = context.get_state_hashes();
+      state.forEach((phrase, i) => {
+        phrase.hash = hashes[i];
+      });
+
       const compareTokensFn = (a, b) => {
         if (isAtom(a) != isAtom(b)) {
           // sort atoms before phrases
@@ -132,13 +137,19 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
+// hash improves array diffing:
+//   https://github.com/benjamine/jsondiffpatch/blob/master/docs/arrays.md
+var diffpatcher = jsondiffpatch.create({
+  objectHash: function(obj, index) {
+    return obj.hash || '$$index:' + index;;
+  }
+});
+
 function updateLiveView(state, previousState) {
   let deltas = {};
   if (previousState != null) {
     // see https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
-    // TODO: generate hashes for array elements for better deltas:
-    //   https://github.com/benjamine/jsondiffpatch/blob/master/docs/arrays.md
-    deltas = jsondiffpatch.diff(previousState, state) || deltas;
+    deltas = diffpatcher.diff(previousState, state) || deltas;
   }
 
   const liveViewEl = document.getElementById("live-view");
