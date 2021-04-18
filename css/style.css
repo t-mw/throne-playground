@@ -7,4 +7,22 @@ html, body {
   width: 50%;
   height: 100%;
   overflow: hidden;
+  float: left;
+}
+
+#live-view {
+  width: 50%;
+  height: 100%;
+  float: left;
+}
+
+.phrase {
+  display: inline-block;
+  margin: 5px;
+  padding: 2px;
+  border-radius: 5px;
+}
+
+.phrase[data-depth="0"] {
+  display: table;
 }
