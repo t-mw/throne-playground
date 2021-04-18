@@ -11,9 +11,12 @@ at 0 0 wood . at 0 1 wood . at 1 1 wood . at 0 1 fire . #update
 #spread . $at X Y fire . + X 1 X' . + Y' 1 Y = at X' Y fire . at X Y' fire
 `;
 
+const updateFreq = 500; // ms
+
 const editorEl = document.getElementById("editor");
 const playButtonEl = document.querySelector("[data-play-button]");
 const resetButtonEl = document.querySelector("[data-reset-button]");
+const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
@@ -34,12 +37,47 @@ import("../../throne-rs/pkg/index.js")
     let context = module.Context.from_text(text);
     updateLiveView(context);
 
+    let requestAnimationFrameId = null;
+    let updateContinuously = updateCheckboxEl.checked;
+    updateCheckboxEl.addEventListener("change", e => {
+      updateContinuously = updateCheckboxEl.checked;
+    });
+
     playButtonEl.addEventListener("click", e => {
-      context.update();
-      updateLiveView(context);
+      if (updateContinuously) {
+        let prevTimestamp = null;
+        let frameTimer = 0;
+
+        const step = (timestamp) => {
+          if (prevTimestamp == null) {
+            prevTimestamp = timestamp;
+          }
+
+          const dt = timestamp - prevTimestamp;
+          prevTimestamp = timestamp;
+
+          frameTimer -= dt;
+
+          if (frameTimer < 0) {
+            frameTimer += updateFreq;
+            context.update();
+            updateLiveView(context);
+          }
+
+          if (updateContinuously) {
+            requestAnimationFrameId = window.requestAnimationFrame(step);
+          }
+        };
+
+        requestAnimationFrameId = window.requestAnimationFrame(step);
+      } else {
+        context.update();
+        updateLiveView(context);
+      }
     });
 
     resetButtonEl.addEventListener("click", e => {
+      window.cancelAnimationFrame(requestAnimationFrameId);
       context = module.Context.from_text(text);
       updateLiveView(context);
     });
