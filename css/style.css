@@ -31,15 +31,32 @@ body {
   display: table;
 }
 
-.phrase.changed {
-  animation: animate-change 1s ease;
+.phrase.added {
+  animation: animate-add 1s linear;
 }
 
-@keyframes animate-change {
-  50% {
-    transform: translateX(10px);
+.phrase.removed {
+  animation: animate-remove 1s linear forwards;
+}
+
+@keyframes animate-add {
+  from {
+    opacity: 0%;
+  }
+  to {
+    opacity: 100%;
   }
 }
+
+@keyframes animate-remove {
+  from {
+    opacity: 100%;
+  }
+  to {
+    opacity: 0%;
+  }
+}
+
 
 #controls {
   position: fixed;

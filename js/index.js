@@ -36,7 +36,7 @@ import("../../throne-rs/pkg/index.js")
     module.init();
 
     let context = null;
-    let previousState = null;
+    let previousState = [];
     const updateLiveViewWithDiff = (context) => {
       if (context == null) {
         return;
@@ -49,6 +49,10 @@ import("../../throne-rs/pkg/index.js")
       });
 
       const compareTokensFn = (a, b) => {
+        if (a.hash == b.hash) {
+          return 0;
+        }
+
         if (isAtom(a) != isAtom(b)) {
           // sort atoms before phrases
           return isAtom(a) ? -1 : 1;
@@ -146,20 +150,28 @@ var diffpatcher = jsondiffpatch.create({
 });
 
 function updateLiveView(state, previousState) {
-  let deltas = {};
-  if (previousState != null) {
-    // see https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
-    deltas = diffpatcher.diff(previousState, state) || deltas;
-  }
+  // see https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+  const deltas = diffpatcher.diff(previousState, state) || {};
 
   const liveViewEl = document.getElementById("live-view");
   liveViewEl.innerHTML = "";
   state.forEach((phrase, i) => {
     const el = phraseToElement(phrase);
-    if (deltas[i]) {
-      el.classList.add("changed");
-    }
     liveViewEl.appendChild(el);
+    if (deltas[i]) {
+      el.classList.add("added");
+    }
+
+    const underscoreDelta = deltas["_" + i];
+    const isMove = underscoreDelta && underscoreDelta[2] == 3;
+    if (underscoreDelta && !isMove) {
+      const el = phraseToElement(previousState[i]);
+      liveViewEl.appendChild(el);
+      el.classList.add("removed");
+      setTimeout(() => {
+        liveViewEl.removeChild(el);
+      }, 1000);
+    }
   });
 }
 
