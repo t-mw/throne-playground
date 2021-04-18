@@ -49,7 +49,7 @@ import("../../throne-rs/pkg/index.js")
       });
 
       const compareTokensFn = (a, b) => {
-        if (a.hash == b.hash) {
+        if (a.hash === b.hash) {
           return 0;
         }
 
@@ -58,7 +58,7 @@ import("../../throne-rs/pkg/index.js")
           return isAtom(a) ? -1 : 1;
         } else if (isAtom(a)) {
           // both are atoms
-          if (a == b) {
+          if (a === b) {
             return 0;
           } else {
             return a < b ? -1 : 1;
@@ -163,7 +163,7 @@ function updateLiveView(state, previousState) {
     }
 
     const underscoreDelta = deltas["_" + i];
-    const isMove = underscoreDelta && underscoreDelta[2] == 3;
+    const isMove = underscoreDelta && underscoreDelta[2] === 3;
     if (underscoreDelta && !isMove) {
       const el = phraseToElement(previousState[i]);
       liveViewEl.appendChild(el);
@@ -193,7 +193,7 @@ function phraseToElement(phraseTokens, depth = 0) {
 }
 
 function isAtom(phrase) {
-  return typeof(phrase) == "string" || typeof(phrase) == "number";
+  return typeof(phrase) === "string" || typeof(phrase) === "number";
 }
 
 function colorFromSeed(seed) {
