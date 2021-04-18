@@ -1,5 +1,6 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const dist = path.resolve(__dirname, "dist");
 
@@ -15,9 +16,19 @@ module.exports = {
   devServer: {
     contentBase: dist,
   },
+  module: {
+    rules: [{
+      test: /\.css$/,
+      use: ["style-loader", "css-loader"]
+    }, {
+      test: /\.ttf$/,
+      use: ["file-loader"]
+    }]
+  },
   plugins: [
     new CopyPlugin([
       path.resolve(__dirname, "static")
-    ])
+    ]),
+    new MonacoWebpackPlugin()
   ]
 };
