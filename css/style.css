@@ -3,6 +3,10 @@ html, body {
   height: 100%;
 }
 
+body {
+  font-family: "Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback";
+}
+
 #editor {
   width: 50%;
   height: 100%;
