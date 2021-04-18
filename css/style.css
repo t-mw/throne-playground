@@ -26,3 +26,9 @@ html, body {
 .phrase[data-depth="0"] {
   display: table;
 }
+
+#controls {
+  position: fixed;
+  top: 0;
+  right: 0;
+}

@@ -12,7 +12,8 @@ at 0 0 wood . at 0 1 wood . at 1 1 wood . at 0 1 fire . #update
 `;
 
 const editorEl = document.getElementById("editor");
-const liveViewEl = document.getElementById("live-view");
+const playButtonEl = document.querySelector("[data-play-button]");
+const resetButtonEl = document.querySelector("[data-reset-button]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
@@ -29,14 +30,29 @@ window.addEventListener("resize", () => editor.layout());
 import("../../throne-rs/pkg/index.js")
   .then(module => {
     module.init();
-    const context = module.Context.from_text(text);
-    context.update();
 
-    context.get_state().forEach(phrase => {
-      liveViewEl.appendChild(phraseToElement(phrase));
+    let context = module.Context.from_text(text);
+    updateLiveView(context);
+
+    playButtonEl.addEventListener("click", e => {
+      context.update();
+      updateLiveView(context);
+    });
+
+    resetButtonEl.addEventListener("click", e => {
+      context = module.Context.from_text(text);
+      updateLiveView(context);
     });
   })
   .catch(console.error);
+
+function updateLiveView(context) {
+  const liveViewEl = document.getElementById("live-view");
+  liveViewEl.innerHTML = "";
+  context.get_state().forEach(phrase => {
+    liveViewEl.appendChild(phraseToElement(phrase));
+  });
+}
 
 function phraseToElement(phrase, depth = 0) {
   const el = document.createElement("div");
