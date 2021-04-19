@@ -4,6 +4,13 @@ import * as jsondiffpatch from "jsondiffpatch";
 import "../css/style.css";
 
 const scripts = {
+  family: `\
+son of Mary is Tom
+brother of Mary is John
+daughter of John is Sarah
+
+son of MOTHER is SON . brother of MOTHER is UNCLE . daughter of UNCLE is COUSIN = cousin of SON is COUSIN
+`,
   guessingGame: `\
 // enter your guess here:
 guess 2
@@ -25,7 +32,7 @@ const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
-  value: scripts.guessingGame,
+  value: scripts.family,
   language: "throne",
   minimap: {
     enabled: false
