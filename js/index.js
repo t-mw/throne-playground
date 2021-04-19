@@ -22,6 +22,48 @@ seed SEED . % SEED 1234 SEED' . % SEED' 10 SECRET = secret SECRET
 guess GUESS . secret GUESS = \`correct!\`
 guess GUESS . secret SECRET . < GUESS SECRET = \`too low!\`
 guess GUESS . secret SECRET . > GUESS SECRET = \`too high!\`
+`,
+  gameOfLife: `\
+// Conway's Game of Life (https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life):
+//  1. Any live cell with two or three live neighbours survives.
+//  2. Any dead cell with three live neighbours becomes a live cell.
+//  3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+
+// glider pattern
+cell 1 0
+cell 2 1
+cell 0 2
+cell 1 2
+cell 2 2
+
+#update: {
+    draw _ _ _ = ()
+    () = #generate-neighbours
+}
+
+#generate-neighbours: {
+    $cell X Y . - X 1 X0 . + X 1 X1 . - Y 1 Y0 . + Y 1 Y1 . !processed X Y =
+        processed X Y . n X0 Y0 . n X Y0 . n X1 Y0 . n X1 Y . n X1 Y1 . n X Y1 . n X0 Y1 . n X0 Y
+    () = #apply-rules
+}
+
+#apply-rules: {
+    cell X Y . n X Y . n X Y . !n X Y = live-cell X Y
+    n X Y . n X Y . n X Y . !n X Y = live-cell X Y
+    () = #cleanup
+}
+
+#cleanup: {
+    cell _ _ = ()
+    processed _ _ = ()
+    n _ _ = ()
+    () = #draw
+}
+
+#draw: {
+    live-cell X Y = draw \`⬛\` X Y . cell X Y
+    () = ()
+}
 `
 };
 
@@ -165,6 +207,7 @@ import("../../throne-rs/pkg/index.js")
 
           if (frameTimer < 0) {
             frameTimer += updateDuration;
+            context.append_state("#update")
             context.update();
             updateLiveViewWithDiff(context, showVisualLiveView);
           }
