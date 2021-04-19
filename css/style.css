@@ -40,11 +40,11 @@ body {
 }
 
 .phrase.added {
-  animation: animate-add 1s linear;
+  animation: animate-add 0.4s linear;
 }
 
 .phrase.removed {
-  animation: animate-remove 1s linear forwards;
+  animation: animate-remove 0.4s linear forwards;
 }
 
 @keyframes animate-add {

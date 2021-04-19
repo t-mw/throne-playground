@@ -25,7 +25,8 @@ guess GUESS . secret SECRET . > GUESS SECRET = \`too high!\`
 `
 };
 
-const updateFreq = 500; // ms
+const updateDuration = 500; // ms
+const animationDuration = 400; // ms, should be < updateDuration
 
 const editorEl = document.getElementById("editor");
 const liveViewEl = document.getElementById("live-view");
@@ -163,7 +164,7 @@ import("../../throne-rs/pkg/index.js")
           frameTimer -= dt;
 
           if (frameTimer < 0) {
-            frameTimer += updateFreq;
+            frameTimer += updateDuration;
             context.update();
             updateLiveViewWithDiff(context, showVisualLiveView);
           }
@@ -276,7 +277,7 @@ function updateStateLiveView(state, previousState) {
       el.classList.add("removed");
       setTimeout(() => {
         liveViewEl.removeChild(el);
-      }, 1000);
+      }, animationDuration);
     }
   });
 }
