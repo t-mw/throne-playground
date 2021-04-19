@@ -29,6 +29,7 @@ const editorEl = document.getElementById("editor");
 const playButtonEl = document.querySelector("[data-play-button]");
 const resetButtonEl = document.querySelector("[data-reset-button]");
 const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
+const visualCheckboxEl = document.querySelector("[data-visual-checkbox]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
@@ -48,12 +49,17 @@ import("../../throne-rs/pkg/index.js")
 
     let context = null;
     let previousState = [];
-    const updateLiveViewWithDiff = (context) => {
+    const updateLiveViewWithDiff = (context, showVisualLiveView) => {
       if (context == null) {
         return;
       }
 
       const state = context.get_state();
+      if (showVisualLiveView) {
+        updateVisualLiveView(state);
+        return;
+      }
+
       const hashes = context.get_state_hashes();
       state.forEach((phrase, i) => {
         phrase.hash = hashes[i];
@@ -92,13 +98,20 @@ import("../../throne-rs/pkg/index.js")
         compareTokensFn(a, b);
       });
 
-      updateLiveView(state, previousState);
+      updateVisualLiveView(state);
+      updateStateLiveView(state, previousState);
       previousState = state;
     };
 
+    let showVisualLiveView = visualCheckboxEl.checked;
+    visualCheckboxEl.addEventListener("change", e => {
+      showVisualLiveView = visualCheckboxEl.checked;
+      updateLiveViewWithDiff(context, showVisualLiveView);
+    });
+
     const setContextFromEditor = () => {
       context = module.Context.from_text(editor.getValue());
-      updateLiveViewWithDiff(context);
+      updateLiveViewWithDiff(context, showVisualLiveView);
     };
     setContextFromEditor();
 
@@ -130,7 +143,7 @@ import("../../throne-rs/pkg/index.js")
           if (frameTimer < 0) {
             frameTimer += updateFreq;
             context.update();
-            updateLiveViewWithDiff(context);
+            updateLiveViewWithDiff(context, showVisualLiveView);
           }
 
           if (updateContinuously) {
@@ -141,7 +154,7 @@ import("../../throne-rs/pkg/index.js")
         requestAnimationFrameId = window.requestAnimationFrame(step);
       } else {
         context.update();
-        updateLiveViewWithDiff(context);
+        updateLiveViewWithDiff(context, showVisualLiveView);
       }
     });
 
@@ -152,6 +165,59 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
+function updateVisualLiveView(state) {
+  const gridCellSize = 48;
+  const gridSize = 20;
+  const canvasSize = gridSize * gridCellSize;
+
+  const pixelX = (gridX) => gridCellSize / 2 + gridX * gridCellSize;
+  const pixelY = (gridY) => gridY * gridCellSize + Math.floor(gridCellSize * 28 / 32);
+
+  const liveViewEl = document.getElementById("live-view");
+  let canvas = liveViewEl.querySelector('canvas');
+  if (canvas == null) {
+    liveViewEl.innerHTML = "";
+    canvas = document.createElement("canvas");
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    liveViewEl.appendChild(canvas);
+  }
+
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.strokeStyle = "rgb(200,200,200)";
+  context.setLineDash([5, 3]);
+  context.lineWidth = 1;
+  context.textAlign = "center";
+
+  context.beginPath();
+  for (let x = 0; x <= gridSize; x++) {
+    context.moveTo(x * gridCellSize, 0);
+    context.lineTo(x * gridCellSize, gridCellSize * gridSize);
+  }
+  context.stroke();
+
+  context.beginPath();
+  for (let y = 0; y <= gridSize; y++) {
+    context.moveTo(0, y * gridCellSize);
+    context.lineTo(gridCellSize * gridSize, y * gridCellSize);
+  }
+  context.stroke();
+
+  context.font = gridCellSize.toString() + "px Droid Sans Mono";
+
+  state.forEach(phrase => {
+    if (isAtom(phrase[0]) && phrase[0] === "draw" && isAtom(phrase[1])) {
+      const text = phrase[1].toString();
+      const gridX = typeof(phrase[2]) === "number" ? phrase[2] : 0;
+      const gridY = typeof(phrase[3]) === "number" ? phrase[3] : 0;
+      for (let i = 0; i < text.length; i++) {
+        context.fillText(text[i], pixelX(gridX + i), pixelY(gridY));
+      }
+    }
+  });
+}
+
 // hash improves array diffing:
 //   https://github.com/benjamine/jsondiffpatch/blob/master/docs/arrays.md
 var diffpatcher = jsondiffpatch.create({
@@ -160,7 +226,7 @@ var diffpatcher = jsondiffpatch.create({
   }
 });
 
-function updateLiveView(state, previousState) {
+function updateStateLiveView(state, previousState) {
   // see https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
   const deltas = diffpatcher.diff(previousState, state) || {};
 
