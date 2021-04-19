@@ -6,6 +6,8 @@
     "start": "rimraf dist pkg && webpack-dev-server --open -d"
   },
   "dependencies": {
+    "@joeattardi/emoji-button": "^4.6.0",
+    "grapheme-splitter": "^1.0.4",
     "jsondiffpatch": "^0.4.1",
     "minireset.css": "^0.0.7",
     "monaco-editor": "^0.23.0"

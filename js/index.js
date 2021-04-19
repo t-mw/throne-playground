@@ -1,6 +1,8 @@
 import "minireset.css";
 import * as monaco from "monaco-editor";
 import * as jsondiffpatch from "jsondiffpatch";
+import * as GraphemeSplitter from "grapheme-splitter";
+import { EmojiButton } from "@joeattardi/emoji-button";
 import "../css/style.css";
 
 const scripts = {
@@ -42,6 +44,19 @@ const editor = monaco.editor.create(editorEl, {
 });
 
 window.addEventListener("resize", () => editor.layout());
+
+const emojiPicker = new EmojiButton();
+const emojiButtonEl = document.querySelector("[data-emoji-button]");
+
+emojiPicker.on("emoji", emojiSelection => {
+  const selection = editor.getSelection();
+  const id = { major: 1, minor: 1 };
+  const text = emojiSelection.emoji;
+  const op = { identifier: id, range: selection, text: text, forceMoveMarkers: true };
+  editor.executeEdits("emoji-picker", [op]);
+});
+
+emojiButtonEl.addEventListener("click", () => emojiPicker.togglePicker(emojiButtonEl));
 
 import("../../throne-rs/pkg/index.js")
   .then(module => {
@@ -165,6 +180,7 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
+const splitter = new GraphemeSplitter();
 function updateVisualLiveView(state) {
   const gridCellSize = 48;
   const gridSize = 20;
@@ -211,9 +227,10 @@ function updateVisualLiveView(state) {
       const text = phrase[1].toString();
       const gridX = typeof(phrase[2]) === "number" ? phrase[2] : 0;
       const gridY = typeof(phrase[3]) === "number" ? phrase[3] : 0;
-      for (let i = 0; i < text.length; i++) {
-        context.fillText(text[i], pixelX(gridX + i), pixelY(gridY));
-      }
+
+      splitter.splitGraphemes(text).forEach((c, i) => {
+        context.fillText(c, pixelX(gridX + i), pixelY(gridY));
+      });
     }
   });
 }
