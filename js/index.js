@@ -7,11 +7,12 @@ import "../css/style.css";
 
 const scripts = {
   family: `\
-son of Mary is Tom
-brother of Mary is John
-daughter of John is Sarah
+David is parent of Tom
+Mary is sister of David
+Mary is parent of Sarah
 
-son of MOTHER is SON . brother of MOTHER is UNCLE . daughter of UNCLE is COUSIN = cousin of SON is COUSIN
+PARENT is parent of CHILD . AUNT is sister of PARENT .
+    AUNT is parent of COUSIN = COUSIN is cousin of CHILD
 `,
   guessingGame: `\
 // enter your guess here:
