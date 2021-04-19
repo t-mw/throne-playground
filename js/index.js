@@ -3,14 +3,18 @@ import * as monaco from "monaco-editor";
 import * as jsondiffpatch from "jsondiffpatch";
 import "../css/style.css";
 
-const text = `\
-at 0 0 wood . at 0 1 wood . at 1 1 wood . at 0 1 fire . #update
-#update: {
-  at X Y wood . at X Y fire = at X Y fire
-  () = #spread
-}
-#spread . $at X Y fire . + X 1 X' . + Y' 1 Y = at X' Y fire . at X Y' fire
-`;
+const scripts = {
+  guessingGame: `\
+// enter your guess here:
+guess 2
+
+seed 34913906
+seed SEED . % SEED 1234 SEED' . % SEED' 10 SECRET = secret SECRET
+guess GUESS . secret GUESS = \`correct!\`
+guess GUESS . secret SECRET . < GUESS SECRET = \`too low!\`
+guess GUESS . secret SECRET . > GUESS SECRET = \`too high!\`
+`
+};
 
 const updateFreq = 500; // ms
 
@@ -21,7 +25,7 @@ const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
-  value: text,
+  value: scripts.guessingGame,
   language: "throne",
   minimap: {
     enabled: false
