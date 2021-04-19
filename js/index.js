@@ -28,6 +28,7 @@ guess GUESS . secret SECRET . > GUESS SECRET = \`too high!\`
 const updateFreq = 500; // ms
 
 const editorEl = document.getElementById("editor");
+const liveViewEl = document.getElementById("live-view");
 const playButtonEl = document.querySelector("[data-play-button]");
 const resetButtonEl = document.querySelector("[data-reset-button]");
 const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
@@ -124,6 +125,12 @@ import("../../throne-rs/pkg/index.js")
       updateLiveViewWithDiff(context, showVisualLiveView);
     });
 
+    window.addEventListener("resize", () => {
+      if (showVisualLiveView) {
+        updateLiveViewWithDiff(context, showVisualLiveView);
+      }
+    });
+
     const setContextFromEditor = () => {
       context = module.Context.from_text(editor.getValue());
       updateLiveViewWithDiff(context, showVisualLiveView);
@@ -182,22 +189,28 @@ import("../../throne-rs/pkg/index.js")
 
 const splitter = new GraphemeSplitter();
 function updateVisualLiveView(state) {
-  const gridCellSize = 48;
-  const gridSize = 20;
-  const canvasSize = gridSize * gridCellSize;
-
-  const pixelX = (gridX) => gridCellSize / 2 + gridX * gridCellSize;
-  const pixelY = (gridY) => gridY * gridCellSize + Math.floor(gridCellSize * 28 / 32);
-
-  const liveViewEl = document.getElementById("live-view");
   let canvas = liveViewEl.querySelector('canvas');
   if (canvas == null) {
     liveViewEl.innerHTML = "";
     canvas = document.createElement("canvas");
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
     liveViewEl.appendChild(canvas);
   }
+
+  const liveViewSize = Math.min(liveViewEl.clientWidth, liveViewEl.clientHeight);
+  const gridSize = 20;
+
+  // constrain cell size to integers divisible by 2
+  let gridCellSize = Math.floor(liveViewSize / gridSize);
+  if (gridCellSize % 2 === 1) {
+    gridCellSize = Math.max(gridCellSize - 1, 0);
+  }
+
+  const canvasSize = gridCellSize * gridSize;
+  canvas.width = canvasSize;
+  canvas.height = canvasSize;
+
+  const pixelX = (gridX) => gridCellSize / 2 + gridX * gridCellSize;
+  const pixelY = (gridY) => gridY * gridCellSize + Math.floor(gridCellSize * 28 / 32);
 
   const context = canvas.getContext("2d");
   context.clearRect(0, 0, canvas.width, canvas.height);
@@ -247,7 +260,6 @@ function updateStateLiveView(state, previousState) {
   // see https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
   const deltas = diffpatcher.diff(previousState, state) || {};
 
-  const liveViewEl = document.getElementById("live-view");
   liveViewEl.innerHTML = "";
   state.forEach((phrase, i) => {
     const el = phraseToElement(phrase);
