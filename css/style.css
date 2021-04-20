@@ -118,8 +118,8 @@ body {
 .phrase {
   display: inline-block;
   margin: 5px;
-  padding: 2px;
   border-radius: 5px;
+  border: 2px solid transparent;
 }
 
 .phrase[data-depth="0"] {
@@ -127,16 +127,18 @@ body {
 }
 
 .phrase.added {
-  animation: animate-add 0.4s linear;
+  animation: animate-add 0.1s linear forwards;
+  border: 2px solid green;
 }
 
 .phrase.removed {
-  animation: animate-remove 0.4s linear forwards;
+  animation: animate-remove 0.1s linear forwards;
+  border: 2px solid red;
 }
 
 @keyframes animate-add {
   from {
-    opacity: 0%;
+    opacity: 25%;
   }
   to {
     opacity: 100%;
@@ -148,6 +150,6 @@ body {
     opacity: 100%;
   }
   to {
-    opacity: 0%;
+    opacity: 25%;
   }
 }

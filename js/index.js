@@ -69,7 +69,6 @@ cell 2 2
 };
 
 const updateDuration = 500; // ms
-const animationDuration = 400; // ms, should be < updateDuration
 
 const editorEl = document.getElementById("editor");
 const liveViewEl = document.getElementById("live-view");
@@ -82,7 +81,7 @@ const controlsEl = document.querySelector("[data-control-state]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
-  value: scripts.family,
+  value: scripts.gameOfLife,
   language: "throne",
   minimap: {
     enabled: false
@@ -188,6 +187,7 @@ import("../../throne-rs/pkg/index.js")
 
     const setContextFromEditor = () => {
       context = module.Context.from_text(editor.getValue());
+      previousState = [];
       updateLiveViewWithDiff(context, showVisualLiveView);
     };
     setContextFromEditor();
@@ -345,9 +345,6 @@ function updateStateLiveView(state, previousState) {
       const el = phraseToElement(previousState[i]);
       liveViewEl.appendChild(el);
       el.classList.add("removed");
-      setTimeout(() => {
-        liveViewEl.removeChild(el);
-      }, animationDuration);
     }
   });
 }
