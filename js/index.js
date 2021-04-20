@@ -136,7 +136,7 @@ import("../../throne-rs/pkg/index.js")
       });
 
       const compareTokensFn = (a, b) => {
-        if (a.hash === b.hash) {
+        if (a.hash != null && b.hash != null && a.hash === b.hash) {
           return 0;
         }
 
@@ -160,13 +160,11 @@ import("../../throne-rs/pkg/index.js")
           }
 
           // phrases share common prefix
-          return a.length - b.length;
+          return a.length < b.length ? -1 : 1;
         }
       };
 
-      state.sort((a, b) => {
-        compareTokensFn(a, b);
-      });
+      state.sort(compareTokensFn);
 
       updateVisualLiveView(state);
       updateStateLiveView(state, previousState);
