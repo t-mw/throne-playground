@@ -60,6 +60,16 @@ export function create(element, initialValue) {
       ],
     },
   });
+  monaco.languages.setLanguageConfiguration("throne", {
+    brackets: [
+      ["{", "}"],
+      ["(", ")"]
+    ],
+    comments: {
+      blockComment: ["/*", "*/"],
+      lineComment: "//"
+    }
+  });
   monaco.editor.defineTheme("throne-theme", { base: "vs", inherit: true, rules: [] });
 
   const editor = monaco.editor.create(element, {
