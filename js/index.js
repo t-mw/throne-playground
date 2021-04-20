@@ -38,23 +38,31 @@ cell 1 2
 cell 2 2
 
 #update: {
+    // clean up 'draw' phrases from the previous iteration
     draw _ _ _ = ()
     () = #generate-neighbours
 }
 
 #generate-neighbours: {
+    // place an 'n' marker phrase for each grid square neighbouring a live cell
     $cell X Y . - X 1 X0 . + X 1 X1 . - Y 1 Y0 . + Y 1 Y1 . !processed X Y =
         processed X Y . n X0 Y0 . n X Y0 . n X1 Y0 . n X1 Y . n X1 Y1 . n X Y1 . n X0 Y1 . n X0 Y
+
     () = #apply-rules
 }
 
 #apply-rules: {
-    cell X Y . n X Y . n X Y . !n X Y = live-cell X Y
-    n X Y . n X Y . n X Y . !n X Y = live-cell X Y
+    // keep any cell with exactly two live neighbours (rule 1)
+    cell X Y . n X Y . n X Y . !n X Y = survive-cell X Y
+
+    // spawn a live cell on any grid square with exactly three live neighbours (rules 1 and 2)
+    n X Y . n X Y . n X Y . !n X Y = survive-cell X Y
+
     () = #cleanup
 }
 
 #cleanup: {
+    // discard any cells that did not survive (rule 3)
     cell _ _ = ()
     processed _ _ = ()
     n _ _ = ()
@@ -62,7 +70,8 @@ cell 2 2
 }
 
 #draw: {
-    live-cell X Y = draw \`⬛\` X Y . cell X Y
+    // draw each 'survive-cell' and convert it to a 'cell' for the next iteration
+    survive-cell X Y = draw \`⬛\` X Y . cell X Y
     () = ()
 }
 `
