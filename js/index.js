@@ -1,9 +1,10 @@
 import "minireset.css";
-import * as monaco from "monaco-editor";
 import * as jsondiffpatch from "jsondiffpatch";
 import * as GraphemeSplitter from "grapheme-splitter";
 import { EmojiButton } from "@joeattardi/emoji-button";
 import "../css/style.css";
+
+import { create as createEditor } from "./editor.js";
 
 const scripts = {
   family: `\
@@ -88,77 +89,7 @@ const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 const visualCheckboxEl = document.querySelector("[data-visual-checkbox]");
 const controlsEl = document.querySelector("[data-control-state]");
 
-monaco.languages.register({ id: "throne" });
-monaco.languages.setMonarchTokensProvider("throne", {
-  defaultToken: "invalid",
-  tokenizer: {
-    root: [
-      [/cell*/, "first-atom"]
-    ],
-    whitespace: [
-      [/[ \t\r\n]+/, ""],
-      [/\/\*/, "comment", "@comment"],
-      [/\/\/.*$/, "comment"],
-    ],
-    comment: [
-      [/[^\/*]+/, "comment"],
-      [/\*\//, "comment", "@pop"],
-      [/[\/*]/, "comment"]
-    ]
-  }
-});
-monaco.languages.setMonarchTokensProvider("throne", {
-  tokenizer: {
-    root: [
-      // identifiers
-      [/[a-zA-Z_\-$][\w$]*/, { cases: { "@default": "identifier" } }],
-
-      // whitespace
-      { include: "@whitespace" },
-
-      // delimiters and operators
-      [/[{}()\[\]]/, "@brackets"],
-
-      // numbers
-      [/\d+/, "number"],
-
-      // strings
-      [/"([^"\\]|\\.)*$/, "string.invalid" ],  // non-teminated string
-      [/"/,  { token: "string.quote", bracket: "@open", next: "@string" } ],
-    ],
-
-    comment: [
-      [/[^\/*]+/, "comment" ],
-      [/\/\*/,    "comment", "@push" ],    // nested comment
-      ["\\*/",    "comment", "@pop"  ],
-      [/[\/*]/,   "comment" ]
-    ],
-
-    string: [
-      [/[^\\"]+/,  "string"],
-      [/\\./,      "string.escape.invalid"],
-      [/"/,        { token: "string.quote", bracket: "@close", next: "@pop" } ]
-    ],
-
-    whitespace: [
-      [/[ \t\r\n]+/, "white"],
-      [/\/\*/,       "comment", "@comment" ],
-      [/\/\/.*$/,    "comment"],
-    ],
-  },
-});
-monaco.editor.defineTheme("throne-theme", { base: "vs", inherit: true, rules: [] });
-
-const editor = monaco.editor.create(editorEl, {
-  value: scripts.gameOfLife,
-  language: "throne",
-  theme: "throne-theme",
-  minimap: {
-    enabled: false
-  },
-  scrollBeyondLastLine: false
-});
-
+const editor = createEditor(editorEl, scripts.gameOfLife);
 window.addEventListener("resize", () => editor.layout());
 
 const emojiPicker = new EmojiButton({
