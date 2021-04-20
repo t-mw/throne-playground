@@ -267,7 +267,7 @@ function setControlState(state) {
 
 const splitter = new GraphemeSplitter();
 function updateVisualLiveView(state) {
-  let canvas = liveViewEl.querySelector('canvas');
+  let canvas = liveViewEl.querySelector("canvas");
   if (canvas == null) {
     liveViewEl.innerHTML = "";
     canvas = document.createElement("canvas");
@@ -330,7 +330,7 @@ function updateVisualLiveView(state) {
 //   https://github.com/benjamine/jsondiffpatch/blob/master/docs/arrays.md
 var diffpatcher = jsondiffpatch.create({
   objectHash: function(obj, index) {
-    return obj.hash || '$$index:' + index;;
+    return obj.hash || "$$index:" + index;;
   }
 });
 
