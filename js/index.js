@@ -20,9 +20,9 @@ guess 2
 
 seed 34913906
 seed SEED . % SEED 1234 SEED' . % SEED' 10 SECRET = secret SECRET
-guess GUESS . secret GUESS = \`correct!\`
-guess GUESS . secret SECRET . < GUESS SECRET = \`too low!\`
-guess GUESS . secret SECRET . > GUESS SECRET = \`too high!\`
+guess GUESS . secret GUESS = "correct!"
+guess GUESS . secret SECRET . < GUESS SECRET = "too low!"
+guess GUESS . secret SECRET . > GUESS SECRET = "too high!"
 `,
   gameOfLife: `\
 // Conway's Game of Life (https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life):
@@ -71,7 +71,7 @@ cell 2 2
 
 #draw: {
     // draw each 'survive-cell' and convert it to a 'cell' for the next iteration
-    survive-cell X Y = draw \`⬛\` X Y . cell X Y
+    survive-cell X Y = draw "⬛" X Y . cell X Y
     () = ()
 }
 `
