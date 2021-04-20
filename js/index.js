@@ -54,10 +54,10 @@ cell 2 2
 
 #apply-rules: {
     // keep any cell with exactly two live neighbours (rule 1)
-    cell X Y . n X Y . n X Y . !n X Y = survive-cell X Y
+    cell X Y . $n X Y . $n X Y . !n X Y = survive-cell X Y
 
     // spawn a live cell on any grid square with exactly three live neighbours (rules 1 and 2)
-    n X Y . n X Y . n X Y . !n X Y = survive-cell X Y
+    $n X Y . $n X Y . $n X Y . !n X Y . !survive-cell X Y = survive-cell X Y
 
     () = #cleanup
 }
