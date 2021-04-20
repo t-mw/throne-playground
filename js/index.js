@@ -74,9 +74,11 @@ const animationDuration = 400; // ms, should be < updateDuration
 const editorEl = document.getElementById("editor");
 const liveViewEl = document.getElementById("live-view");
 const playButtonEl = document.querySelector("[data-play-button]");
+const pauseButtonEl = document.querySelector("[data-pause-button]");
 const resetButtonEl = document.querySelector("[data-reset-button]");
 const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 const visualCheckboxEl = document.querySelector("[data-visual-checkbox]");
+const controlsEl = document.querySelector("[data-control-state]");
 
 monaco.languages.register({ id: "throne" });
 const editor = monaco.editor.create(editorEl, {
@@ -90,7 +92,9 @@ const editor = monaco.editor.create(editorEl, {
 
 window.addEventListener("resize", () => editor.layout());
 
-const emojiPicker = new EmojiButton();
+const emojiPicker = new EmojiButton({
+  position: "bottom-end"
+});
 const emojiButtonEl = document.querySelector("[data-emoji-button]");
 
 emojiPicker.on("emoji", emojiSelection => {
@@ -101,7 +105,14 @@ emojiPicker.on("emoji", emojiSelection => {
   editor.executeEdits("emoji-picker", [op]);
 });
 
-emojiButtonEl.addEventListener("click", () => emojiPicker.togglePicker(emojiButtonEl));
+emojiButtonEl.addEventListener("click", () => {
+  emojiButtonEl.classList.add("active");
+  emojiPicker.togglePicker(emojiButtonEl);
+});
+
+emojiPicker.on("hidden", () => {
+  emojiButtonEl.classList.remove("active");
+});
 
 import("../../throne-rs/pkg/index.js")
   .then(module => {
@@ -193,6 +204,8 @@ import("../../throne-rs/pkg/index.js")
 
     playButtonEl.addEventListener("click", e => {
       if (updateContinuously) {
+        setControlState("playing");
+
         let prevTimestamp = null;
         let frameTimer = 0;
 
@@ -215,6 +228,8 @@ import("../../throne-rs/pkg/index.js")
 
           if (updateContinuously) {
             requestAnimationFrameId = window.requestAnimationFrame(step);
+          } else {
+            setControlState("finished");
           }
         };
 
@@ -222,15 +237,26 @@ import("../../throne-rs/pkg/index.js")
       } else {
         context.update();
         updateLiveViewWithDiff(context, showVisualLiveView);
+        setControlState("finished");
       }
+    });
+
+    pauseButtonEl.addEventListener("click", e => {
+      window.cancelAnimationFrame(requestAnimationFrameId);
+      setControlState("paused");
     });
 
     resetButtonEl.addEventListener("click", e => {
       window.cancelAnimationFrame(requestAnimationFrameId);
       setContextFromEditor();
+      setControlState("ready");
     });
   })
   .catch(console.error);
+
+function setControlState(state) {
+  controlsEl.setAttribute("data-control-state", state);
+}
 
 const splitter = new GraphemeSplitter();
 function updateVisualLiveView(state) {
