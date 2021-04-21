@@ -320,7 +320,7 @@ function updateVisualLiveView(state) {
 
 // hash improves array diffing:
 //   https://github.com/benjamine/jsondiffpatch/blob/master/docs/arrays.md
-var diffpatcher = jsondiffpatch.create({
+const diffpatcher = jsondiffpatch.create({
   objectHash: function(obj, index) {
     return obj.hash || "$$index:" + index;;
   }
