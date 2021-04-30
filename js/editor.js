@@ -84,3 +84,20 @@ export function create(element, initialValue) {
 
   return editor;
 }
+
+export function setError(e, editor) {
+  if (e != null && "throne_span" in e) {
+    const { line_start, line_end, col_start, col_end } = e.throne_span;
+    const markers = [{
+      severity: monaco.MarkerSeverity.Error,
+      startLineNumber: line_start,
+      startColumn: col_start,
+      endLineNumber: line_end,
+      endColumn: col_end,
+      message: e.message
+    }];
+    monaco.editor.setModelMarkers(editor.getModel(), "", markers);
+  } else {
+    monaco.editor.setModelMarkers(editor.getModel(), "", []);
+  }
+}

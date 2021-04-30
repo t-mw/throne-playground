@@ -4,7 +4,7 @@ import * as GraphemeSplitter from "grapheme-splitter";
 import { EmojiButton } from "@joeattardi/emoji-button";
 import "../css/style.css";
 
-import { create as createEditor } from "./editor.js";
+import { create as createEditor, setError as setEditorError } from "./editor.js";
 import * as examples from "./examples.js";
 
 const updateDuration = 500; // ms
@@ -114,7 +114,14 @@ import("../../throne-rs/pkg/index.js")
     });
 
     const setContextFromEditor = () => {
-      context = module.Context.from_text(editor.getValue());
+      setEditorError(null, editor);
+      setControlState("ready");
+      try {
+        context = module.Context.from_text(editor.getValue());
+      } catch (e) {
+        setEditorError(e, editor);
+        setControlState("error");
+      }
       previousState = [];
       updateLiveViewWithDiff(context, showVisualLiveView);
     };
@@ -177,7 +184,6 @@ import("../../throne-rs/pkg/index.js")
     resetButtonEl.addEventListener("click", e => {
       window.cancelAnimationFrame(requestAnimationFrameId);
       setContextFromEditor();
-      setControlState("ready");
     });
   })
   .catch(console.error);
