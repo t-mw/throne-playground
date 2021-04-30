@@ -23,6 +23,9 @@ module.exports = {
     }, {
       test: /\.ttf$/,
       use: ["file-loader"]
+    }, {
+      test: /\.throne$/,
+      use: "raw-loader",
     }]
   },
   plugins: [

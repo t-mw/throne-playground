@@ -1,0 +1,8 @@
+// enter your guess here:
+guess 2
+
+seed 34913906
+seed SEED . % SEED 1234 SEED' . % SEED' 10 SECRET = secret SECRET
+guess GUESS . secret GUESS = "correct!"
+guess GUESS . secret SECRET . < GUESS SECRET = "too low!"
+guess GUESS . secret SECRET . > GUESS SECRET = "too high!"
