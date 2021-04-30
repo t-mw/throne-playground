@@ -118,10 +118,13 @@ import("../../throne-rs/pkg/index.js")
       setControlState("ready");
       try {
         context = module.Context.from_text(editor.getValue());
+        window.context = context;
       } catch (e) {
+        context = null;
         setEditorError(e, editor);
         setControlState("error");
       }
+
       previousState = [];
       updateLiveViewWithDiff(context, showVisualLiveView);
     };
@@ -138,6 +141,10 @@ import("../../throne-rs/pkg/index.js")
     });
 
     playButtonEl.addEventListener("click", e => {
+      if (context == null) {
+        return;
+      }
+
       if (updateContinuously) {
         setControlState("playing");
 
