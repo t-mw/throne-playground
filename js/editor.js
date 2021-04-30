@@ -86,7 +86,9 @@ export function create(element, initialValue) {
 }
 
 export function setError(e, editor) {
-  if (e != null && "throne_span" in e) {
+  if (e == null) {
+    monaco.editor.setModelMarkers(editor.getModel(), "", []);
+  } else if ("throne_span" in e) {
     const { line_start, line_end, col_start, col_end } = e.throne_span;
     const markers = [{
       severity: monaco.MarkerSeverity.Error,
@@ -98,6 +100,6 @@ export function setError(e, editor) {
     }];
     monaco.editor.setModelMarkers(editor.getModel(), "", markers);
   } else {
-    monaco.editor.setModelMarkers(editor.getModel(), "", []);
+    throw e;
   }
 }
