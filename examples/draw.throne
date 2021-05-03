@@ -1,0 +1,17 @@
+draw "🌕" 5 5
+draw "🌕" 14 5
+draw "🌕" 14 14
+draw "🌕" 5 14
+draw "👑" 7 8
+draw "throne" 7 9
+
+#update . draw "🌕" X Y = draw "🌖" X Y
+#update . draw "🌖" X Y = draw "🌗" X Y
+#update . draw "🌗" X Y = draw "🌘" X Y
+#update . draw "🌘" X Y = draw "🌑" X Y
+#update . draw "🌑" X Y = draw "🌒" X Y
+#update . draw "🌒" X Y = draw "🌓" X Y
+#update . draw "🌓" X Y = draw "🌔" X Y
+#update . draw "🌔" X Y = draw "🌕" X Y
+
+#update . draw "👑" X Y . - X 7 X' . + X' 1 X'' . % X'' 6 X''' . + X''' 7 X'''' = draw "👑" X'''' Y
