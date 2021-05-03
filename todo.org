@@ -1,1 +1,0 @@
-*** TODO detect and abandon infinite loops
