@@ -202,6 +202,7 @@ import("../../throne-rs/pkg/index.js")
 
 function updateContext(context, editor) {
   setEditorError(null, editor);
+  context.remove_state_by_first_atom("draw");
   try {
     context.update();
     return true;
