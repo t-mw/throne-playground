@@ -116,7 +116,9 @@ import("../../throne-rs/pkg/index.js")
       }
     });
 
+    let requestAnimationFrameId = null;
     const setContextFromEditor = () => {
+      window.cancelAnimationFrame(requestAnimationFrameId);
       setEditorError(null, editor);
       setControlState("ready");
       try {
@@ -131,13 +133,13 @@ import("../../throne-rs/pkg/index.js")
       previousState = [];
       updateLiveViewWithDiff(context, showVisualLiveView);
     };
+
     setContextFromEditor();
 
     editor.onDidChangeModelContent(() => {
       setContextFromEditor();
     });
 
-    let requestAnimationFrameId = null;
     let updateContinuously = updateCheckboxEl.checked;
     updateCheckboxEl.addEventListener("change", e => {
       updateContinuously = updateCheckboxEl.checked;
@@ -201,7 +203,6 @@ import("../../throne-rs/pkg/index.js")
     });
 
     resetButtonEl.addEventListener("click", e => {
-      window.cancelAnimationFrame(requestAnimationFrameId);
       setContextFromEditor();
     });
   })
