@@ -10,16 +10,11 @@ cell 0 2
 cell 1 2
 cell 2 2
 
-// lwss
-cell 14 14
-cell 17 14
-cell 13 15
-cell 13 16
-cell 17 16
-cell 13 17
-cell 14 17
-cell 15 17
-cell 16 17
+cell 18 19
+cell 17 18
+cell 19 17
+cell 18 17
+cell 17 17
 
 #update = #generate-neighbors
 
