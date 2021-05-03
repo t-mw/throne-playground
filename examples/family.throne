@@ -1,6 +1,5 @@
-David is parent of Tom
 Mary is sister of David
-Mary is parent of Sarah
+Sarah is child of Mary
+Tom is child of David
 
-PARENT is parent of CHILD . AUNT is sister of PARENT .
-    AUNT is parent of COUSIN = COUSIN is cousin of CHILD
+CHILD is child of PARENT . AUNT is sister of PARENT . COUSIN is child of AUNT = COUSIN is cousin of CHILD
