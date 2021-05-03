@@ -305,6 +305,17 @@ function updateStateLiveView(state, previousState) {
       el.classList.add("removed");
     }
   });
+
+  // show remainder of previous state, if previous state was longer than current state
+  for (let i = state.length; i < previousState.length; i++) {
+    const underscoreDelta = deltas["_" + i];
+    const isMove = underscoreDelta && underscoreDelta[2] === 3;
+    if (underscoreDelta && !isMove) {
+      const el = phraseToElement(previousState[i]);
+      liveViewEl.appendChild(el);
+      el.classList.add("removed");
+    }
+  }
 }
 
 function phraseToElement(phraseTokens, depth = 0) {
