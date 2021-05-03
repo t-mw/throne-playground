@@ -10,40 +10,44 @@ cell 0 2
 cell 1 2
 cell 2 2
 
-#update: {
-    // clean up 'draw' phrases from the previous iteration
-    draw _ _ _ = ()
-    () = #generate-neighbours
-}
+#update = #generate-neighbors
 
-#generate-neighbours: {
+#generate-neighbors: {
     // place an 'n' marker phrase for each grid square neighbouring a live cell
     $cell X Y . - X 1 X0 . + X 1 X1 . - Y 1 Y0 . + Y 1 Y1 . !processed X Y =
-        processed X Y . n X0 Y0 . n X Y0 . n X1 Y0 . n X1 Y . n X1 Y1 . n X Y1 . n X0 Y1 . n X0 Y
+        processed X Y . n X0 Y0 1 . n X Y0 1 . n X1 Y0 1 . n X1 Y 1 . n X1 Y1 1 . n X Y1 1 . n X0 Y1 1 . n X0 Y 1
 
-    () = #apply-rules
+    // combine overlapping 'n' marker phrases
+    n X Y N1 . n X Y N2 . + N1 N2 N3 = n X Y N3
+
+    () = #apply-rules-1-2
 }
 
-#apply-rules: {
+#apply-rules-1-2: {
     // keep any cell with exactly two live neighbours (rule 1)
-    cell X Y . $n X Y . $n X Y . !n X Y = survive-cell X Y
+    cell X Y . n X Y 2 = survive-cell X Y
 
     // spawn a live cell on any grid square with exactly three live neighbours (rules 1 and 2)
-    $n X Y . $n X Y . $n X Y . !n X Y . !survive-cell X Y = survive-cell X Y
+    n X Y 3 = survive-cell X Y
 
-    () = #cleanup
+    () = #apply-rule-3
 }
 
-#cleanup: {
+#apply-rule-3: {
     // discard any cells that did not survive (rule 3)
-    cell _ _ = ()
-    processed _ _ = ()
-    n _ _ = ()
+    cell X Y = ()
     () = #draw
 }
 
 #draw: {
     // draw each 'survive-cell' and convert it to a 'cell' for the next iteration
-    survive-cell X Y = draw "⬛" X Y . cell X Y
+    survive-cell X Y = cell X Y . draw "⬛" X Y
+    () = #post-update
+}
+
+#post-update: {
+    // clean up temporary phrases
+    processed _ _ = ()
+    n _ _ _ = ()
     () = ()
 }
