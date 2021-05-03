@@ -17,6 +17,7 @@ const pauseButtonEl = document.querySelector("[data-pause-button]");
 const resetButtonEl = document.querySelector("[data-reset-button]");
 const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 const visualCheckboxEl = document.querySelector("[data-visual-checkbox]");
+const clearDrawCheckboxEl = document.querySelector("[data-clear-draw-checkbox]");
 const controlsEl = document.querySelector("[data-control-state]");
 
 const editor = createEditor(editorEl, examples.gameOfLife);
@@ -141,6 +142,11 @@ import("../../throne-rs/pkg/index.js")
       updateContinuously = updateCheckboxEl.checked;
     });
 
+    let clearDraw = clearDrawCheckboxEl.checked;
+    clearDrawCheckboxEl.addEventListener("change", e => {
+      clearDraw = clearDrawCheckboxEl.checked;
+    });
+
     playButtonEl.addEventListener("click", e => {
       if (context == null) {
         return;
@@ -165,7 +171,7 @@ import("../../throne-rs/pkg/index.js")
           if (frameTimer < 0) {
             frameTimer += UPDATE_DURATION;
             context.append_state("#update")
-            if (!updateContext(context, editor)) {
+            if (!updateContext(context, clearDraw, editor)) {
               return;
             }
             updateLiveViewWithDiff(context, showVisualLiveView);
@@ -180,7 +186,7 @@ import("../../throne-rs/pkg/index.js")
 
         requestAnimationFrameId = window.requestAnimationFrame(step);
       } else {
-        if (!updateContext(context, editor)) {
+        if (!updateContext(context, true, editor)) {
           return;
         }
         updateLiveViewWithDiff(context, showVisualLiveView);
@@ -200,9 +206,11 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
-function updateContext(context, editor) {
+function updateContext(context, clearDraw, editor) {
   setEditorError(null, editor);
-  context.remove_state_by_first_atom("draw");
+  if (clearDraw) {
+    context.remove_state_by_first_atom("draw");
+  }
   try {
     context.update();
     return true;
