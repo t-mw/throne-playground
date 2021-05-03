@@ -165,7 +165,9 @@ import("../../throne-rs/pkg/index.js")
           if (frameTimer < 0) {
             frameTimer += UPDATE_DURATION;
             context.append_state("#update")
-            context.update();
+            if (!updateContext(context, editor)) {
+              return;
+            }
             updateLiveViewWithDiff(context, showVisualLiveView);
           }
 
@@ -178,7 +180,9 @@ import("../../throne-rs/pkg/index.js")
 
         requestAnimationFrameId = window.requestAnimationFrame(step);
       } else {
-        context.update();
+        if (!updateContext(context, editor)) {
+          return;
+        }
         updateLiveViewWithDiff(context, showVisualLiveView);
         setControlState("finished");
       }
@@ -195,6 +199,18 @@ import("../../throne-rs/pkg/index.js")
     });
   })
   .catch(console.error);
+
+function updateContext(context, editor) {
+  setEditorError(null, editor);
+  try {
+    context.update();
+    return true;
+  } catch (e) {
+    setEditorError(e, editor);
+    setControlState("error");
+    return false;
+  }
+}
 
 function setControlState(state) {
   controlsEl.setAttribute("data-control-state", state);
