@@ -24,7 +24,8 @@ const editor = createEditor(editorEl, examples.gameOfLife);
 window.addEventListener("resize", () => editor.layout());
 
 const emojiPicker = new EmojiButton({
-  position: "bottom-end"
+  position: "bottom-end",
+  autoHide: false
 });
 const emojiButtonEl = document.querySelector("[data-emoji-button]");
 
