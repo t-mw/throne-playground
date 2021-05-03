@@ -23,15 +23,15 @@ cell 16 17
 
 #update = #generate-neighbors
 
-#generate-neighbors: {
-    // place an 'n' marker phrase for each grid square neighbouring a live cell
-    $cell X Y . - X 1 X0 . + X 1 X1 . - Y 1 Y0 . + Y 1 Y1 . !processed X Y =
-        processed X Y . n X0 Y0 1 . n X Y0 1 . n X1 Y0 1 . n X1 Y 1 . n X1 Y1 1 . n X Y1 1 . n X0 Y1 1 . n X0 Y 1
+// place an 'n' marker phrase for each grid square neighbouring a live cell
+#generate-neighbors . $cell X Y . - X 1 X0 . + X 1 X1 . - Y 1 Y0 . + Y 1 Y1 . !processed X Y =
+    processed X Y . n X0 Y0 1 . n X Y0 1 . n X1 Y0 1 . n X1 Y 1 . n X1 Y1 1 . n X Y1 1 . n X0 Y1 1 . n X0 Y 1 . #combine
+#generate-neighbors . () = #apply-rules-1-2
 
+#combine: {
     // combine overlapping 'n' marker phrases
-    n X Y N1 . n X Y N2 . + N1 N2 N3 = n X Y N3
-
-    () = #apply-rules-1-2
+    n X Y 1 . n X Y N1 . + N1 1 N2 = n X Y N2
+    () = #generate-neighbors
 }
 
 #apply-rules-1-2: {
