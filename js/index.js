@@ -7,7 +7,8 @@ import "../css/style.css";
 import { create as createEditor, setError as setEditorError } from "./editor.js";
 import * as examples from "./examples.js";
 
-const updateDuration = 500; // ms
+const UPDATE_DURATION = 500; // ms
+const GRID_SIZE = 20;
 
 const editorEl = document.getElementById("editor");
 const liveViewEl = document.getElementById("live-view");
@@ -162,7 +163,7 @@ import("../../throne-rs/pkg/index.js")
           frameTimer -= dt;
 
           if (frameTimer < 0) {
-            frameTimer += updateDuration;
+            frameTimer += UPDATE_DURATION;
             context.append_state("#update")
             context.update();
             updateLiveViewWithDiff(context, showVisualLiveView);
@@ -209,15 +210,14 @@ function updateVisualLiveView(state) {
   }
 
   const liveViewSize = Math.min(liveViewEl.clientWidth, liveViewEl.clientHeight);
-  const gridSize = 20;
 
   // constrain cell size to integers divisible by 2
-  let gridCellSize = Math.floor(liveViewSize / gridSize);
+  let gridCellSize = Math.floor(liveViewSize / GRID_SIZE);
   if (gridCellSize % 2 === 1) {
     gridCellSize = Math.max(gridCellSize - 1, 0);
   }
 
-  const canvasSize = gridCellSize * gridSize;
+  const canvasSize = gridCellSize * GRID_SIZE;
   canvas.width = canvasSize;
   canvas.height = canvasSize;
 
@@ -232,16 +232,16 @@ function updateVisualLiveView(state) {
   context.textAlign = "center";
 
   context.beginPath();
-  for (let x = 0; x <= gridSize; x++) {
+  for (let x = 0; x <= GRID_SIZE; x++) {
     context.moveTo(x * gridCellSize, 0);
-    context.lineTo(x * gridCellSize, gridCellSize * gridSize);
+    context.lineTo(x * gridCellSize, gridCellSize * GRID_SIZE);
   }
   context.stroke();
 
   context.beginPath();
-  for (let y = 0; y <= gridSize; y++) {
+  for (let y = 0; y <= GRID_SIZE; y++) {
     context.moveTo(0, y * gridCellSize);
-    context.lineTo(gridCellSize * gridSize, y * gridCellSize);
+    context.lineTo(gridCellSize * GRID_SIZE, y * gridCellSize);
   }
   context.stroke();
 
