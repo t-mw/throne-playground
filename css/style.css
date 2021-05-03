@@ -82,11 +82,11 @@ body {
 .play-button, .pause-button, .reset-button  {
   display: none;
   font-size: 15em;
-  opacity: 50%;
+  opacity: 25%;
 }
 
 .play-button:hover, .pause-button:hover, .reset-button:hover  {
-  opacity: 100%;
+  opacity: 75%;
 }
 
 [data-control-state="ready"] .play-button {
