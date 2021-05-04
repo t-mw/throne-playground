@@ -1,11 +1,11 @@
-fall-timer 5 . default-fall-timer 5 . block-id 0 . max-width 10 . max-height 20
+fall-timer 5 . default-fall-timer 5 . block-id 0 . falling-shape-id 0 . max-width 20 . max-height 20
 
-#update . !shape _X _Y _BLOCKS = #new-shape
+#update . !shape _X _Y _BLOCKS . falling-shape-id ID . + ID 1 ID' = falling-shape-id ID' . #new-shape
 #update . $shape _X _Y _BLOCKS = #input-u
 
-#new-shape . $max-height H = new-shape 4 H ((block -1 0) ((block 0 0) ((block 1 0) ((block 0 1) (cons))))) . #shape-to-blocks (#input-lr)
-#new-shape . $max-height H = new-shape 4 H ((block 0 -1) ((block 0 0) ((block 0 1) (cons)))) . #shape-to-blocks (#input-lr)
-#new-shape . $max-height H = new-shape 4 H ((block 0 -1) ((block 0 0) ((block 0 1) ((block 1 1) (cons))))) . #shape-to-blocks (#input-lr)
+#new-shape . $max-height H = new-shape 9 H ((block -1 0) ((block 0 0) ((block 1 0) ((block 0 1) (cons))))) . #shape-to-blocks (#input-lr)
+#new-shape . $max-height H = new-shape 9 H ((block 0 -1) ((block 0 0) ((block 0 1) (cons)))) . #shape-to-blocks (#input-lr)
+#new-shape . $max-height H = new-shape 9 H ((block 0 -1) ((block 0 0) ((block 0 1) ((block 1 1) (cons))))) . #shape-to-blocks (#input-lr)
 
 #shape-to-blocks RETURN: {
     block-falling _ID _X _Y = ()
@@ -14,11 +14,11 @@ fall-timer 5 . default-fall-timer 5 . block-id 0 . max-width 10 . max-height 20
 }
 
 #shape-to-blocks-create RETURN: {
-    $new-shape X Y _ . (block DX DY) BLOCK . block-id ID . + ID 1 ID2 . + X DX X' . + Y DY Y' = block-falling ID X' Y' . block-id ID2 . BLOCK
+    $new-shape X Y _ . (block DX DY) BLOCK . block-id ID . + ID 1 ID' . + X DX X' . + Y DY Y' = block-falling ID X' Y' . block-id ID' . BLOCK
     () = #shape-to-blocks-check RETURN
 }
 
-#shape-to-blocks-check RETURN . block-falling _ X Y . $block-set _ X Y = #shape-to-blocks-fail RETURN
+#shape-to-blocks-check RETURN . block-falling _ X Y . $block-set _ _ X Y = #shape-to-blocks-fail RETURN
 #shape-to-blocks-check RETURN . block-falling _ X _ . < X 0 = #shape-to-blocks-fail RETURN
 #shape-to-blocks-check RETURN . block-falling _ X _ . $max-width W . >= X W = #shape-to-blocks-fail RETURN
 #shape-to-blocks-check RETURN . () = #shape-to-blocks-ok RETURN
@@ -33,7 +33,7 @@ fall-timer 5 . default-fall-timer 5 . block-id 0 . max-width 10 . max-height 20
     $shape X Y BLOCKS . () = new-shape X Y BLOCKS . #shape-to-blocks RETURN
 }
 
-#input-u . ^kp up = #rotate-shape
+#input-u . ^key-pressed up = #rotate-shape
 #input-u . () = #input-lr
 
 #rotate-shape: {
@@ -42,18 +42,18 @@ fall-timer 5 . default-fall-timer 5 . block-id 0 . max-width 10 . max-height 20
     new-shape X Y _ . new-blocks BLOCKS . () = new-shape X Y BLOCKS . #shape-to-blocks (#input-d)
 }
 
-#input-lr . ^kp left . $shape X Y BLOCKS . + X' 1 X = new-shape X' Y BLOCKS . #shape-to-blocks (#input-d)
-#input-lr . ^kp right . $shape X Y BLOCKS . + X 1 X' = new-shape X' Y BLOCKS . #shape-to-blocks (#input-d)
+#input-lr . ^key-pressed left . $shape X Y BLOCKS . + X' 1 X = new-shape X' Y BLOCKS . #shape-to-blocks (#input-d)
+#input-lr . ^key-pressed right . $shape X Y BLOCKS . + X 1 X' = new-shape X' Y BLOCKS . #shape-to-blocks (#input-d)
 #input-lr . () = #input-d
 
 #input-d: {
-    ^kd down . default-fall-timer 5 . fall-timer _ = default-fall-timer 1 . fall-timer 0
-    ^ku down . default-fall-timer 1 . fall-timer _ = default-fall-timer 5 . fall-timer 0
+    ^key-down down . default-fall-timer 5 . fall-timer _ = default-fall-timer 1 . fall-timer 0
+    ^key-up down . default-fall-timer 1 . fall-timer _ = default-fall-timer 5 . fall-timer 0
     () = #collision
 }
 
 #collision: {
-    block-falling ID X Y . + Y' 1 Y . $block-set _ X Y' = block-setting ID X Y
+    block-falling ID X Y . + Y' 1 Y . $block-set _ _ X Y' = block-setting ID X Y
     block-falling ID X Y . + Y' 1 Y . < Y' 0 = block-setting ID X Y
     $block-setting _ _ _ . block-falling ID X' Y' = block-setting ID X' Y'
     $block-setting _ _ _ . shape _ _ _ = ()
@@ -61,11 +61,11 @@ fall-timer 5 . default-fall-timer 5 . block-id 0 . max-width 10 . max-height 20
 }
 
 #set: {
-    block-setting ID X Y = block-set ID X Y
+    block-setting ID X Y . $falling-shape-id SHAPE_ID = block-set ID SHAPE_ID X Y
     $max-width W . () = #score-x . score-counter W 0
 }
 
-#score-x . score-counter X Y . + X' 1 X . $block-set _ X' Y = score-counter X' Y . #score-x
+#score-x . score-counter X Y . + X' 1 X . $block-set _ _ X' Y = score-counter X' Y . #score-x
 #score-x . score-counter 0 Y = #clear . clear-y Y
 #score-x . $score-counter _ _ . () = #score-y
 
@@ -73,21 +73,35 @@ fall-timer 5 . default-fall-timer 5 . block-id 0 . max-width 10 . max-height 20
 #score-y . score-counter _ _ . () = #fall-tick
 
 #clear: {
-    $clear-y Y . block-set _ _ Y = ()
+    $clear-y Y . block-set _ _ _ Y = ()
     block-clear-move _ = ()
     () = #clear-move
 }
 
 #clear-move: {
-    $clear-y Y . block-set ID X Y' . !block-clear-move ID . > Y' Y . + Y'' 1 Y' = block-set ID X Y'' . block-clear-move ID
+    $clear-y Y . block-set ID SHAPE_ID X Y' . !block-clear-move ID . > Y' Y . + Y'' 1 Y' = block-set ID SHAPE_ID X Y'' . block-clear-move ID
     $max-width W . clear-y _ . () = #score-x . score-counter W 0
 }
 
-#fall-tick . fall-timer TIMER . >= TIMER 0 . + TIMER2 1 TIMER . >= TIMER2 0 = fall-timer TIMER2 . #clean
+#fall-tick . fall-timer TIMER . >= TIMER 0 . + TIMER2 1 TIMER . >= TIMER2 0 = fall-timer TIMER2 . #draw
 #fall-tick . fall-timer TIMER . >= TIMER 0 . + TIMER2 1 TIMER . < TIMER2 0 . $default-fall-timer D = fall-timer D . #fall
 
-#fall . shape X Y BLOCKS . + Y' 1 Y = new-shape X Y' BLOCKS . #shape-to-blocks (#clean)
-#fall . () = #clean
+#fall . shape X Y BLOCKS . + Y' 1 Y = new-shape X Y' BLOCKS . #shape-to-blocks (#draw)
+#fall . () = #draw
+
+<<icon ID "🟥" . % ID 7 0
+<<icon ID "🟦" . % ID 7 1
+<<icon ID "🟫" . % ID 7 2
+<<icon ID "🟩" . % ID 7 3
+<<icon ID "🟨" . % ID 7 4
+<<icon ID "🟪" . % ID 7 5
+<<icon ID "🟧" . % ID 7 6
+
+#draw: {
+    $block-falling ID X Y . - 19 Y Y' . !draw _ X Y' . $falling-shape-id SHAPE_ID . <<icon SHAPE_ID ICON = draw ICON X Y'
+    $block-set ID SHAPE_ID X Y . - 19 Y Y' . !draw _ X Y' . <<icon SHAPE_ID ICON = draw ICON X Y'
+    () = #clean
+}
 
 #clean: {
     cons = ()

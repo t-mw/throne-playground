@@ -20,7 +20,7 @@ const visualCheckboxEl = document.querySelector("[data-visual-checkbox]");
 const clearOnUpdateCheckboxEl = document.querySelector("[data-clear-on-update-checkbox]");
 const controlsEl = document.querySelector("[data-control-state]");
 
-const editor = createEditor(editorEl, examples.gameOfLife);
+const editor = createEditor(editorEl, examples.blocks);
 window.addEventListener("resize", () => editor.layout());
 
 const emojiPicker = new EmojiButton({
@@ -242,8 +242,10 @@ function updateContext(context, inputState, clearOnUpdate, editor) {
     context.update(side => {
       switch (side[0]) {
       case "key-down": return inputState.keysDown[keyToCode(side[1])] === true ? side : null;
+      case "key-up": return inputState.keysDown[keyToCode(side[1])] === true ? null : side;
       case "key-pressed": return inputState.keysPressed[keyToCode(side[1])] === true ? side : null;
       case "mouse-down": return inputState.isMouseDown;
+      case "mouse-up": return !inputState.isMouseDown;
       case "mouse-pressed": return inputState.wasMousePressed;
       case "mouse-position": {
         const gridX = inputState.mouseGridPos[0];
