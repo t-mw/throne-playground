@@ -55,5 +55,4 @@ cell 17 17
     // clean up temporary phrases
     processed _ _ = ()
     n _ _ _ = ()
-    () = ()
 }

@@ -105,5 +105,4 @@ fall-timer 5 . default-fall-timer 5 . block-id 0 . falling-shape-id 0 . max-widt
 
 #clean: {
     cons = ()
-    () = ()
 }
