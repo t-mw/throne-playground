@@ -17,7 +17,7 @@ const pauseButtonEl = document.querySelector("[data-pause-button]");
 const resetButtonEl = document.querySelector("[data-reset-button]");
 const updateCheckboxEl = document.querySelector("[data-update-checkbox]");
 const visualCheckboxEl = document.querySelector("[data-visual-checkbox]");
-const clearDrawCheckboxEl = document.querySelector("[data-clear-draw-checkbox]");
+const clearOnUpdateCheckboxEl = document.querySelector("[data-clear-on-update-checkbox]");
 const controlsEl = document.querySelector("[data-control-state]");
 
 const editor = createEditor(editorEl, examples.gameOfLife);
@@ -154,9 +154,9 @@ import("../../throne-rs/pkg/index.js")
       updateContinuously = updateCheckboxEl.checked;
     });
 
-    let clearDraw = clearDrawCheckboxEl.checked;
-    clearDrawCheckboxEl.addEventListener("change", e => {
-      clearDraw = clearDrawCheckboxEl.checked;
+    let clearOnUpdate = clearOnUpdateCheckboxEl.checked;
+    clearOnUpdateCheckboxEl.addEventListener("change", e => {
+      clearOnUpdate = clearOnUpdateCheckboxEl.checked;
     });
 
     playButtonEl.addEventListener("click", e => {
@@ -189,7 +189,7 @@ import("../../throne-rs/pkg/index.js")
           if (frameTimer < 0) {
             frameTimer += UPDATE_DURATION;
             context.append_state("#update")
-            if (!updateContext(context, inputState, clearDraw, editor)) {
+            if (!updateContext(context, inputState, clearOnUpdate, editor)) {
               return;
             }
             updateLiveViewWithDiff(context, showVisualLiveView);
@@ -223,9 +223,9 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
-function updateContext(context, inputState, clearDraw, editor) {
+function updateContext(context, inputState, clearOnUpdate, editor) {
   setEditorError(null, editor);
-  if (clearDraw) {
+  if (clearOnUpdate) {
     context.remove_state_by_first_atom("draw");
   }
   try {
@@ -263,6 +263,10 @@ function updateContext(context, inputState, clearDraw, editor) {
 
     inputState.keysPressed = {};
     inputState.wasMousePressed = false;
+
+    if (clearOnUpdate) {
+      context.remove_state_by_first_atom("#update");
+    }
 
     return true;
   } catch (e) {
