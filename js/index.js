@@ -237,6 +237,10 @@ function updateContext(context, clearDraw, editor) {
 }
 
 function setControlState(state) {
+  const disablePlayback = state == "error";
+  playButtonEl.disabled = disablePlayback;
+  pauseButtonEl.disabled = disablePlayback;
+  resetButtonEl.disabled = disablePlayback;
   controlsEl.setAttribute("data-control-state", state);
 }
 

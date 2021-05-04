@@ -21,7 +21,18 @@ body {
   outline: none;
   padding: 0;
   cursor: pointer;
-  color: #666666;
+  color: #666;
+  opacity: 75%;
+}
+
+.icon-button:hover {
+  opacity: 100%;
+}
+
+.icon-button:disabled {
+  opacity: 25%;
+  color: red;
+  cursor: default;
 }
 
 .icon-button svg {
@@ -57,38 +68,41 @@ body {
   padding: 15px 0 50px 0;
 }
 
-#controls {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+@media screen and (max-width: 1680px) {
+  #editor {
+    width: 40%;
+  }
+
+  #live-view-container {
+    width: 60%;
+  }
 }
 
-#controls #playback {
+@media screen and (max-width: 1400px) {
+  #editor {
+    width: 30%;
+  }
+
+  #live-view-container {
+    width: 70%;
+  }
+}
+
+#playback {
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
 [data-control-state="paused"] #playback {
-  right: 7.5em;
+  right: 17px;
   position: relative;
 }
 
 .play-button, .pause-button, .reset-button  {
   display: none;
-  font-size: 15em;
-  opacity: 25%;
+  font-size: 34px;
 }
-
-.play-button:hover, .pause-button:hover, .reset-button:hover  {
-  opacity: 75%;
-}
-
 [data-control-state="ready"] .play-button {
   display: block;
 }
@@ -101,13 +115,24 @@ body {
 [data-control-state="finished"] .reset-button, [data-control-state="paused"] .reset-button {
   display: block;
 }
+[data-control-state="error"] .play-button {
+  display: block;
+}
 
-.error-message {
+#error-message {
   display: none;
   color: red;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
-[data-control-state="error"] .error-message {
-  display: block;
+[data-control-state="error"] #error-message {
+  display: flex;
 }
 
 #settings {
