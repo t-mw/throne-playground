@@ -52,6 +52,14 @@ import("../../throne-rs/pkg/index.js")
 
     let context = null;
     let previousState = [];
+
+    let canvas = null;
+    const inputState = {
+      keysDown: {},
+      mouseDown: false,
+      mouseGridPos: [-1, -1]
+    };
+
     const updateLiveViewWithDiff = (context, showVisualLiveView) => {
       if (context == null) {
         return;
@@ -59,7 +67,7 @@ import("../../throne-rs/pkg/index.js")
 
       const state = context.get_state();
       if (showVisualLiveView) {
-        updateVisualLiveView(state);
+        canvas = updateVisualLiveView(state, inputState);
         return;
       }
 
@@ -99,7 +107,6 @@ import("../../throne-rs/pkg/index.js")
 
       state.sort(compareTokensFn);
 
-      updateVisualLiveView(state);
       updateStateLiveView(state, previousState);
       previousState = state;
     };
@@ -153,6 +160,12 @@ import("../../throne-rs/pkg/index.js")
     playButtonEl.addEventListener("click", e => {
       if (context == null) {
         return;
+      }
+
+      if (canvas != null) {
+        if (document.activeElement !== canvas) {
+          canvas.focus();
+        }
       }
 
       if (updateContinuously) {
@@ -228,20 +241,55 @@ function setControlState(state) {
 }
 
 const splitter = new GraphemeSplitter();
-function updateVisualLiveView(state) {
-  let canvas = liveViewEl.querySelector("canvas");
-  if (canvas == null) {
-    liveViewEl.innerHTML = "";
-    canvas = document.createElement("canvas");
-    liveViewEl.appendChild(canvas);
-  }
-
+function updateVisualLiveView(state, inputState) {
   const liveViewSize = Math.min(liveViewEl.clientWidth, liveViewEl.clientHeight);
 
   // constrain cell size to integers divisible by 2
   let gridCellSize = Math.floor(liveViewSize / GRID_SIZE);
   if (gridCellSize % 2 === 1) {
     gridCellSize = Math.max(gridCellSize - 1, 0);
+  }
+
+  let canvas = liveViewEl.querySelector("canvas");
+  if (canvas == null) {
+    liveViewEl.innerHTML = "";
+    canvas = document.createElement("canvas");
+    liveViewEl.appendChild(canvas);
+
+    // make canvas focusable
+    canvas.tabIndex = "0";
+
+    canvas.addEventListener("keydown", function(e) {
+      inputState.keysDown[e.keyCode] = true;
+    });
+
+    canvas.addEventListener("keyup", function(e) {
+      inputState.keysDown[e.keyCode] = false;
+    });
+
+    canvas.addEventListener("mousedown", function(e) {
+      if (document.activeElement !== canvas) {
+        e.target.focus();
+      }
+      inputState.mouseDown = true;
+    });
+
+    canvas.addEventListener("mouseup", function(e) {
+      inputState.mouseDown = false;
+    });
+
+    canvas.addEventListener("mousemove", function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const pixelX = e.clientX - rect.left;
+      const pixelY = e.clientY - rect.top;
+      const gridX = Math.floor(pixelX / gridCellSize);
+      const gridY = Math.floor(pixelY / gridCellSize);
+      inputState.mouseGridPos = [gridX, gridY];
+    });
+
+    canvas.addEventListener("mouseleave", function(e) {
+      inputState.mouseGridPos = [-1, -1];
+    });
   }
 
   const canvasSize = gridCellSize * GRID_SIZE;
@@ -285,6 +333,8 @@ function updateVisualLiveView(state) {
       });
     }
   });
+
+  return canvas;
 }
 
 // hash improves array diffing:
