@@ -188,8 +188,8 @@ import("../../throne-rs/pkg/index.js")
 
           if (frameTimer < 0) {
             frameTimer += UPDATE_DURATION;
-            context.append_state("#update")
-            if (!updateContext(context, inputState, clearOnUpdate, editor)) {
+            const options = { clearOnUpdate, appendUpdate: true };
+            if (!updateContext(context, inputState, options, editor)) {
               return;
             }
             updateLiveViewWithDiff(context, showVisualLiveView);
@@ -204,7 +204,8 @@ import("../../throne-rs/pkg/index.js")
 
         requestAnimationFrameId = window.requestAnimationFrame(step);
       } else {
-        if (!updateContext(context, inputState, true, editor)) {
+        const options = { clearOnUpdate: false, appendUpdate: false };
+        if (!updateContext(context, inputState,  options, editor)) {
           return;
         }
         updateLiveViewWithDiff(context, showVisualLiveView);
@@ -223,10 +224,15 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
-function updateContext(context, inputState, clearOnUpdate, editor) {
+function updateContext(context, inputState, options, editor) {
+  const { clearOnUpdate, appendUpdate } = options;
   setEditorError(null, editor);
   if (clearOnUpdate) {
     context.remove_state_by_first_atom("draw");
+    context.remove_state_by_first_atom("#update");
+  }
+  if (appendUpdate) {
+    context.append_state("#update")
   }
   try {
     const keyToCode = (key) => {
@@ -265,10 +271,6 @@ function updateContext(context, inputState, clearOnUpdate, editor) {
 
     inputState.keysPressed = {};
     inputState.wasMousePressed = false;
-
-    if (clearOnUpdate) {
-      context.remove_state_by_first_atom("#update");
-    }
 
     return true;
   } catch (e) {
