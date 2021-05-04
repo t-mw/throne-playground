@@ -56,7 +56,9 @@ import("../../throne-rs/pkg/index.js")
     let canvas = null;
     const inputState = {
       keysDown: {},
-      mouseDown: false,
+      keysPressed: {},
+      isMouseDown: false,
+      wasMousePressed: false,
       mouseGridPos: [-1, -1]
     };
 
@@ -187,7 +189,7 @@ import("../../throne-rs/pkg/index.js")
           if (frameTimer < 0) {
             frameTimer += UPDATE_DURATION;
             context.append_state("#update")
-            if (!updateContext(context, clearDraw, editor)) {
+            if (!updateContext(context, inputState, clearDraw, editor)) {
               return;
             }
             updateLiveViewWithDiff(context, showVisualLiveView);
@@ -202,7 +204,7 @@ import("../../throne-rs/pkg/index.js")
 
         requestAnimationFrameId = window.requestAnimationFrame(step);
       } else {
-        if (!updateContext(context, true, editor)) {
+        if (!updateContext(context, inputState, true, editor)) {
           return;
         }
         updateLiveViewWithDiff(context, showVisualLiveView);
@@ -221,13 +223,47 @@ import("../../throne-rs/pkg/index.js")
   })
   .catch(console.error);
 
-function updateContext(context, clearDraw, editor) {
+function updateContext(context, inputState, clearDraw, editor) {
   setEditorError(null, editor);
   if (clearDraw) {
     context.remove_state_by_first_atom("draw");
   }
   try {
-    context.update();
+    const keyToCode = (key) => {
+      switch (key) {
+      case "left": return 37;
+      case "up": return 38;
+      case "right": return 39;
+      case "down": return 40;
+      default: return key;
+      }
+    };
+
+    context.update(side => {
+      switch (side[0]) {
+      case "key-down": return inputState.keysDown[keyToCode(side[1])] === true ? side : null;
+      case "key-pressed": return inputState.keysPressed[keyToCode(side[1])] === true ? side : null;
+      case "mouse-down": return inputState.isMouseDown;
+      case "mouse-pressed": return inputState.wasMousePressed;
+      case "mouse-position": {
+        const gridX = inputState.mouseGridPos[0];
+        const gridY = inputState.mouseGridPos[1];
+        if (gridX === -1 || gridY === -1) {
+          return null;
+        }
+        if (side.length != 3) {
+          return null;
+        }
+        side[1] = gridX;
+        side[2] = gridY;
+        return side;
+      }
+      }
+    });
+
+    inputState.keysPressed = {};
+    inputState.wasMousePressed = false;
+
     return true;
   } catch (e) {
     setEditorError(e, editor);
@@ -265,6 +301,7 @@ function updateVisualLiveView(state, inputState) {
 
     canvas.addEventListener("keydown", function(e) {
       inputState.keysDown[e.keyCode] = true;
+      inputState.keysPressed[e.keyCode] = true;
     });
 
     canvas.addEventListener("keyup", function(e) {
@@ -275,11 +312,12 @@ function updateVisualLiveView(state, inputState) {
       if (document.activeElement !== canvas) {
         e.target.focus();
       }
-      inputState.mouseDown = true;
+      inputState.isMouseDown = true;
+      inputState.wasMousePressed = true;
     });
 
     canvas.addEventListener("mouseup", function(e) {
-      inputState.mouseDown = false;
+      inputState.isMouseDown = false;
     });
 
     canvas.addEventListener("mousemove", function(e) {
@@ -399,8 +437,21 @@ function phraseToElement(phraseTokens, depth = 0) {
   return el;
 }
 
-function isAtom(phrase) {
-  return typeof(phrase) === "string" || typeof(phrase) === "number";
+function isAtom(token) {
+  return typeof(token) === "string" || typeof(token) === "number";
+}
+
+function isVariable(token) {
+  if (typeof(token) !== "string") {
+    return false;
+  }
+  for (let i = 0; i < token.length; i++) {
+    const ch = token.charAt(i);
+    if (!((ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch === '_' || ch === '\'')) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function colorFromSeed(seed) {
