@@ -7,7 +7,7 @@ import { create } from "./playground.js";
 create(document.getElementById("playground"), {
   content: examples.blocks,
   enableUpdate: true,
-  enableVisualView: true,
+  enableVisualMode: true,
   enableClearOnUpdate: true,
   gridWidth: 10,
   gridHeight: 20

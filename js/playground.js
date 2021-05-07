@@ -3,6 +3,7 @@ import {
   updateDecorations as updateEditorDecorations,
   setError as setEditorError
 } from "./editor.js";
+import { SettingsWindow } from "./settings";
 import { colorFromSeed, debounce } from "./utility.js";
 import playgroundTemplate from "../html/playground.html";
 import "../css/playground.scss";
@@ -11,16 +12,16 @@ import * as jsondiffpatch from "jsondiffpatch";
 import * as GraphemeSplitter from "grapheme-splitter";
 import { EmojiButton } from "@joeattardi/emoji-button";
 
-const DEFAULT_UPDATE_DURATION = 250; // ms
+const DEFAULT_UPDATE_FREQUENCY = 4; // updates per second
 const DEFAULT_GRID_SIZE = 20;
 
 export function create(rootEl, options) {
   let {
     content,
     enableUpdate,
-    enableVisualView,
+    enableVisualMode,
     enableClearOnUpdate,
-    updateDuration,
+    updateFrequency,
     gridWidth,
     gridHeight
   } = options;
@@ -30,11 +31,11 @@ export function create(rootEl, options) {
   }
 
   enableUpdate = !!enableUpdate;
-  enableVisualView = !!enableVisualView;
+  enableVisualMode = !!enableVisualMode;
   enableClearOnUpdate = !!enableClearOnUpdate;
 
-  if (typeof updateDuration !== "number") {
-    updateDuration = DEFAULT_UPDATE_DURATION;
+  if (typeof updateFrequency !== "number") {
+    updateFrequency = DEFAULT_UPDATE_FREQUENCY;
   }
 
   if (typeof gridWidth !== "number") {
@@ -53,9 +54,7 @@ export function create(rootEl, options) {
 
   const editorEl = rootEl.querySelector(".editor");
   const liveViewEl = rootEl.querySelector(".live-view");
-  const updateCheckboxEl = rootEl.querySelector("[data-update-checkbox]");
   const visualCheckboxEl = rootEl.querySelector("[data-visual-checkbox]");
-  const clearOnUpdateCheckboxEl = rootEl.querySelector("[data-clear-on-update-checkbox]");
   const controlEls = {
     root: rootEl.querySelector("[data-control-state]"),
     play: rootEl.querySelector("[data-play-button]"),
@@ -66,9 +65,38 @@ export function create(rootEl, options) {
   const editor = createEditor(editorEl, content);
   window.addEventListener("resize", debounce(() => editor.monacoEditor.layout(), 250));
 
+  const settingsWindow = new SettingsWindow(playgroundEl, {
+    enableUpdate,
+    enableClearOnUpdate,
+    updateFrequency,
+    gridWidth,
+    gridHeight
+  });
+
+  const settingsButtonEl = rootEl.querySelector("[data-settings-button]");
+  settingsButtonEl.addEventListener("click", () => {
+    settingsButtonEl.classList.add("active");
+    settingsWindow.toggle(settingsButtonEl);
+  });
+
+  settingsWindow.on("hidden", () => {
+    settingsButtonEl.classList.remove("active");
+  });
+
+  settingsWindow.on("change", () => {
+    enableUpdate = settingsWindow.enableUpdate;
+    enableClearOnUpdate = settingsWindow.enableClearOnUpdate;
+    updateFrequency = settingsWindow.updateFrequency;
+    gridWidth = settingsWindow.gridWidth;
+    gridHeight = settingsWindow.gridHeight;
+
+    updateLiveViewWithDiff(context, enableVisualMode);
+  });
+
   const emojiPicker = new EmojiButton({
     position: "bottom-end",
-    autoHide: false
+    autoHide: false,
+    showAnimation: false
   });
   const emojiButtonEl = rootEl.querySelector("[data-emoji-button]");
 
@@ -89,87 +117,87 @@ export function create(rootEl, options) {
     emojiButtonEl.classList.remove("active");
   });
 
+  visualCheckboxEl.checked = enableVisualMode;
+  visualCheckboxEl.addEventListener("change", e => {
+    enableVisualMode = visualCheckboxEl.checked;
+    updateLiveViewWithDiff(context, enableVisualMode);
+  });
+
+  window.addEventListener("resize", () => {
+    if (enableVisualMode) {
+      updateLiveViewWithDiff(context, enableVisualMode);
+    }
+  });
+
+  let context = null;
+  let previousState = [];
+
+  let canvas = null;
+  const inputState = {
+    keysDown: {},
+    keysPressed: {},
+    isMouseDown: false,
+    wasMousePressed: false,
+    mouseGridPos: [-1, -1]
+  };
+
+  const updateLiveViewWithDiff = (context, enableVisualMode) => {
+    if (context == null) {
+      return;
+    }
+
+    const state = context.get_state();
+    if (enableVisualMode) {
+      liveViewEl.classList.add("visual");
+      canvas = updateVisualLiveView(state, inputState, liveViewEl, gridWidth, gridHeight);
+      return;
+    } else {
+      liveViewEl.classList.remove("visual");
+    }
+
+    const hashes = context.get_state_hashes();
+    state.forEach((phrase, i) => {
+      phrase.hash = hashes[i];
+    });
+
+    const compareTokensFn = (a, b) => {
+      if (a.hash != null && b.hash != null && a.hash === b.hash) {
+        return 0;
+      }
+
+      if (isAtom(a) != isAtom(b)) {
+        // sort atoms before phrases
+        return isAtom(a) ? -1 : 1;
+      } else if (isAtom(a)) {
+        // both are atoms
+        if (a === b) {
+          return 0;
+        } else {
+          return a < b ? -1 : 1;
+        }
+      } else {
+        // both are phrases
+        for (let i = 0; i < a.length && i < b.length; i++) {
+          const result = compareTokensFn(a[i], b[i]);
+          if (result != 0) {
+            return result;
+          }
+        }
+
+        // phrases share common prefix
+        return a.length < b.length ? -1 : 1;
+      }
+    };
+
+    state.sort(compareTokensFn);
+
+    updateStateLiveView(state, previousState, liveViewEl);
+    previousState = state;
+  };
+
   import("../../throne-rs/pkg/index.js")
     .then(module => {
       module.init();
-
-      let context = null;
-      let previousState = [];
-
-      let canvas = null;
-      const inputState = {
-        keysDown: {},
-        keysPressed: {},
-        isMouseDown: false,
-        wasMousePressed: false,
-        mouseGridPos: [-1, -1]
-      };
-
-      const updateLiveViewWithDiff = (context, enableVisualView) => {
-        if (context == null) {
-          return;
-        }
-
-        const state = context.get_state();
-        if (enableVisualView) {
-          liveViewEl.classList.add("visual");
-          canvas = updateVisualLiveView(state, inputState, liveViewEl, gridWidth, gridHeight);
-          return;
-        } else {
-          liveViewEl.classList.remove("visual");
-        }
-
-        const hashes = context.get_state_hashes();
-        state.forEach((phrase, i) => {
-          phrase.hash = hashes[i];
-        });
-
-        const compareTokensFn = (a, b) => {
-          if (a.hash != null && b.hash != null && a.hash === b.hash) {
-            return 0;
-          }
-
-          if (isAtom(a) != isAtom(b)) {
-            // sort atoms before phrases
-            return isAtom(a) ? -1 : 1;
-          } else if (isAtom(a)) {
-            // both are atoms
-            if (a === b) {
-              return 0;
-            } else {
-              return a < b ? -1 : 1;
-            }
-          } else {
-            // both are phrases
-            for (let i = 0; i < a.length && i < b.length; i++) {
-              const result = compareTokensFn(a[i], b[i]);
-              if (result != 0) {
-                return result;
-              }
-            }
-
-            // phrases share common prefix
-            return a.length < b.length ? -1 : 1;
-          }
-        };
-
-        state.sort(compareTokensFn);
-
-        updateStateLiveView(state, previousState, liveViewEl);
-        previousState = state;
-      };
-
-      visualCheckboxEl.checked = enableVisualView;
-      visualCheckboxEl.addEventListener("change", e => {
-        enableVisualView = visualCheckboxEl.checked;
-        updateLiveViewWithDiff(context, enableVisualView);
-      });
-
-      window.addEventListener("resize", () => {
-        if (enableVisualView) {
-          updateLiveViewWithDiff(context, enableVisualView);
-        }
-      });
 
       let requestAnimationFrameId = null;
       const setContextFromEditor = () => {
@@ -186,7 +214,7 @@ export function create(rootEl, options) {
         }
 
         previousState = [];
-        updateLiveViewWithDiff(context, enableVisualView);
+        updateLiveViewWithDiff(context, enableVisualMode);
       };
 
       setContextFromEditor();
@@ -195,16 +223,6 @@ export function create(rootEl, options) {
       editor.monacoEditor.onDidChangeModelContent(() => {
         updateEditorDecorationsDebounced(editor);
         setContextFromEditor();
-      });
-
-      updateCheckboxEl.checked = enableUpdate;
-      updateCheckboxEl.addEventListener("change", e => {
-        enableUpdate = updateCheckboxEl.checked;
-      });
-
-      clearOnUpdateCheckboxEl.checked = enableClearOnUpdate;
-      clearOnUpdateCheckboxEl.addEventListener("change", e => {
-        enableClearOnUpdate = clearOnUpdateCheckboxEl.checked;
       });
 
       controlEls.play.addEventListener("click", e => {
@@ -235,12 +253,12 @@ export function create(rootEl, options) {
             frameTimer -= dt;
 
             if (frameTimer < 0) {
-              frameTimer += updateDuration;
+              frameTimer += 1000 / updateFrequency;
               const options = { enableClearOnUpdate, appendUpdate: true };
               if (!updateContext(context, inputState, options, editor)) {
                 return;
               }
-              updateLiveViewWithDiff(context, enableVisualView);
+              updateLiveViewWithDiff(context, enableVisualMode);
             }
 
             if (enableUpdate) {
@@ -256,7 +274,7 @@ export function create(rootEl, options) {
           if (!updateContext(context, inputState,  options, editor)) {
             return;
           }
-          updateLiveViewWithDiff(context, enableVisualView);
+          updateLiveViewWithDiff(context, enableVisualMode);
           setControlState("finished", controlEls);
         }
       });

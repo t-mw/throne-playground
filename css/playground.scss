@@ -51,20 +51,48 @@
     vertical-align: -0.125em;
   }
 
-  .emoji-button {
+  .emoji-button, .settings-button {
     position: absolute;
     padding: 9px;
     padding-bottom: 5px;
     bottom: 15px;
-    right: 35px;
     z-index: 1;
-    font-size: 1.5em;
+    font-size: 24px;
     border-bottom: 4px solid transparent;
   }
 
-  .emoji-button.active {
+  .emoji-button.active, .settings-button.active {
     color: #4F81E5;
     border-bottom: 4px solid #4F81E5;
+  }
+
+  .settings-button {
+    right: 85px;
+  }
+
+  .emoji-button {
+    right: 35px;
+  }
+
+  .settings-window {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: right;
+    z-index: 1;
+
+    .item {
+      border-top: 1px solid #ccc;
+      padding: 10px;
+
+      &:first-child {
+        border: none;
+      }
+    }
+
+    input {
+      max-width: 50px;
+    }
   }
 
   .live-view-container {

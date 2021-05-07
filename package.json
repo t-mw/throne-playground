@@ -7,10 +7,13 @@
   },
   "dependencies": {
     "@joeattardi/emoji-button": "^4.6.0",
+    "@popperjs/core": "^2.9.2",
+    "focus-trap": "^6.4.0",
     "grapheme-splitter": "^1.0.4",
     "jsondiffpatch": "^0.4.1",
     "minireset.css": "^0.0.7",
-    "monaco-editor": "^0.23.0"
+    "monaco-editor": "^0.23.0",
+    "tiny-emitter": "^2.1.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.3",
