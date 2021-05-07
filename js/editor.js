@@ -3,28 +3,10 @@ import * as monaco from "monaco-editor";
 export function create(element, initialValue) {
   monaco.languages.register({ id: "throne" });
   monaco.languages.setMonarchTokensProvider("throne", {
-    defaultToken: "invalid",
-    tokenizer: {
-      root: [
-        [/cell*/, "first-atom"]
-      ],
-      whitespace: [
-        [/[ \t\r\n]+/, ""],
-        [/\/\*/, "comment", "@comment"],
-        [/\/\/.*$/, "comment"],
-      ],
-      comment: [
-        [/[^\/*]+/, "comment"],
-        [/\*\//, "comment", "@pop"],
-        [/[\/*]/, "comment"]
-      ]
-    }
-  });
-  monaco.languages.setMonarchTokensProvider("throne", {
     tokenizer: {
       root: [
         // identifiers
-        [/[a-zA-Z_\-$][\w$]*/, { cases: { "@default": "identifier" } }],
+        [/[a-zA-Z][a-zA-Z0-9_\-\']*/, "identifier"],
 
         // whitespace
         { include: "@whitespace" },
