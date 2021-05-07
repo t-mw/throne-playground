@@ -1,4 +1,9 @@
-import { create as createEditor, setError as setEditorError } from "./editor.js";
+import {
+  create as createEditor,
+  updateDecorations as updateEditorDecorations,
+  setError as setEditorError
+} from "./editor.js";
+import { colorFromSeed, debounce } from "./utility.js";
 import playgroundTemplate from "../html/playground.html";
 import "../css/playground.scss";
 
@@ -59,7 +64,7 @@ export function create(rootEl, options) {
   };
 
   const editor = createEditor(editorEl, content);
-  window.addEventListener("resize", () => editor.layout());
+  window.addEventListener("resize", () => editor.monacoEditor.layout());
 
   const emojiPicker = new EmojiButton({
     position: "bottom-end",
@@ -68,11 +73,11 @@ export function create(rootEl, options) {
   const emojiButtonEl = rootEl.querySelector("[data-emoji-button]");
 
   emojiPicker.on("emoji", emojiSelection => {
-    const selection = editor.getSelection();
+    const selection = editor.monacoEditor.getSelection();
     const id = { major: 1, minor: 1 };
     const text = emojiSelection.emoji;
     const op = { identifier: id, range: selection, text: text, forceMoveMarkers: true };
-    editor.executeEdits("emoji-picker", [op]);
+    editor.monacoEditor.executeEdits("emoji-picker", [op]);
   });
 
   emojiButtonEl.addEventListener("click", () => {
@@ -172,7 +177,7 @@ export function create(rootEl, options) {
         setEditorError(null, editor);
         setControlState("ready", controlEls);
         try {
-          context = module.Context.from_text(editor.getValue());
+          context = module.Context.from_text(editor.monacoEditor.getValue());
           window.context = context;
         } catch (e) {
           context = null;
@@ -186,8 +191,9 @@ export function create(rootEl, options) {
 
       setContextFromEditor();
 
-      editor.onDidChangeModelContent(content => {
-        console.log(content);
+      const updateEditorDecorationsDebounced = debounce(updateEditorDecorations, 1000);
+      editor.monacoEditor.onDidChangeModelContent(() => {
+        updateEditorDecorationsDebounced(editor);
         setContextFromEditor();
       });
 
@@ -503,19 +509,4 @@ function isVariable(token) {
     }
   }
   return true;
-}
-
-function colorFromSeed(seed) {
-  const color = Math.floor((Math.abs(Math.sin(seed) * 16777215)) % 16777215);
-
-  let r = (color >> 16) & 0xff;
-  let g = (color >> 8) & 0xff;
-  let b = color & 0xff;
-
-  // mix with white
-  r = Math.floor((r + 0xff) / 2);
-  g = Math.floor((g + 0xff) / 2);
-  b = Math.floor((b + 0xff) / 2);
-
-  return "rgb(" + r.toString() + "," + g.toString() + "," + b.toString() + ")";
 }
