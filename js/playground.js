@@ -324,7 +324,7 @@ function updateContext(context, inputState, options, editor) {
 }
 
 function setControlState(state, controlEls) {
-  const disablePlayback = state == "error";
+  const disablePlayback = state === "error";
   controlEls.play.disabled = disablePlayback;
   controlEls.pause.disabled = disablePlayback;
   controlEls.reset.disabled = disablePlayback;
