@@ -64,7 +64,7 @@ export function create(rootEl, options) {
   };
 
   const editor = createEditor(editorEl, content);
-  window.addEventListener("resize", () => editor.monacoEditor.layout());
+  window.addEventListener("resize", debounce(() => editor.monacoEditor.layout(), 250));
 
   const emojiPicker = new EmojiButton({
     position: "bottom-end",
