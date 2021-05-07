@@ -17,7 +17,7 @@ const DEFAULT_GRID_SIZE = 20;
 
 export function create(rootEl, options) {
   let {
-    content,
+    script,
     enableUpdate,
     enableVisualMode,
     enableClearOnUpdate,
@@ -26,8 +26,8 @@ export function create(rootEl, options) {
     gridHeight
   } = options;
 
-  if (typeof content !== "string") {
-    content = "";
+  if (typeof script !== "string") {
+    script = "";
   }
 
   enableUpdate = !!enableUpdate;
@@ -62,7 +62,7 @@ export function create(rootEl, options) {
     reset: rootEl.querySelector("[data-reset-button]")
   };
 
-  const editor = createEditor(editorEl, content);
+  const editor = createEditor(editorEl, script);
   window.addEventListener("resize", debounce(() => editor.monacoEditor.layout(), 250));
 
   const settingsWindow = new SettingsWindow(playgroundEl, {
