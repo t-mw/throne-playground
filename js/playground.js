@@ -7,7 +7,7 @@ import * as GraphemeSplitter from "grapheme-splitter";
 import { EmojiButton } from "@joeattardi/emoji-button";
 
 const DEFAULT_UPDATE_DURATION = 250; // ms
-const GRID_SIZE = 20;
+const DEFAULT_GRID_SIZE = 20;
 
 export function create(rootEl, options) {
   let {
@@ -15,7 +15,9 @@ export function create(rootEl, options) {
     enableUpdate,
     enableVisualView,
     enableClearOnUpdate,
-    updateDuration
+    updateDuration,
+    gridWidth,
+    gridHeight
   } = options;
 
   if (typeof content !== "string") {
@@ -28,6 +30,14 @@ export function create(rootEl, options) {
 
   if (typeof updateDuration !== "number") {
     updateDuration = DEFAULT_UPDATE_DURATION;
+  }
+
+  if (typeof gridWidth !== "number") {
+    gridWidth = DEFAULT_GRID_SIZE;
+  }
+
+  if (typeof gridHeight !== "number") {
+    gridHeight = DEFAULT_GRID_SIZE;
   }
 
   const playgroundEl = document.createElement("div");
@@ -97,8 +107,11 @@ export function create(rootEl, options) {
 
         const state = context.get_state();
         if (enableVisualView) {
-          canvas = updateVisualLiveView(state, inputState, liveViewEl);
+          liveViewEl.classList.add("visual");
+          canvas = updateVisualLiveView(state, inputState, liveViewEl, gridWidth, gridHeight);
           return;
+        } else {
+          liveViewEl.classList.remove("visual");
         }
 
         const hashes = context.get_state_hashes();
@@ -173,7 +186,8 @@ export function create(rootEl, options) {
 
       setContextFromEditor();
 
-      editor.onDidChangeModelContent(() => {
+      editor.onDidChangeModelContent(content => {
+        console.log(content);
         setContextFromEditor();
       });
 
@@ -318,11 +332,12 @@ function setControlState(state, controlEls) {
 }
 
 const splitter = new GraphemeSplitter();
-function updateVisualLiveView(state, inputState, liveViewEl) {
-  const liveViewSize = Math.min(liveViewEl.clientWidth, liveViewEl.clientHeight);
-
+function updateVisualLiveView(state, inputState, liveViewEl, gridWidth, gridHeight) {
+  let gridCellSize = Math.min(
+    Math.floor(liveViewEl.clientWidth / gridWidth),
+    Math.floor(liveViewEl.clientHeight / gridHeight)
+  );
   // constrain cell size to integers divisible by 2
-  let gridCellSize = Math.floor(liveViewSize / GRID_SIZE);
   if (gridCellSize % 2 === 1) {
     gridCellSize = Math.max(gridCellSize - 1, 0);
   }
@@ -371,9 +386,8 @@ function updateVisualLiveView(state, inputState, liveViewEl) {
     });
   }
 
-  const canvasSize = gridCellSize * GRID_SIZE;
-  canvas.width = canvasSize;
-  canvas.height = canvasSize;
+  canvas.width = gridCellSize * gridWidth;
+  canvas.height = gridCellSize * gridHeight;
 
   const pixelX = (gridX) => gridCellSize / 2 + gridX * gridCellSize;
   const pixelY = (gridY) => gridY * gridCellSize + Math.floor(gridCellSize * 28 / 32);
@@ -386,16 +400,16 @@ function updateVisualLiveView(state, inputState, liveViewEl) {
   context.textAlign = "center";
 
   context.beginPath();
-  for (let x = 0; x <= GRID_SIZE; x++) {
+  for (let x = 0; x <= gridWidth; x++) {
     context.moveTo(x * gridCellSize, 0);
-    context.lineTo(x * gridCellSize, gridCellSize * GRID_SIZE);
+    context.lineTo(x * gridCellSize, gridCellSize * gridHeight);
   }
   context.stroke();
 
   context.beginPath();
-  for (let y = 0; y <= GRID_SIZE; y++) {
+  for (let y = 0; y <= gridHeight; y++) {
     context.moveTo(0, y * gridCellSize);
-    context.lineTo(gridCellSize * GRID_SIZE, y * gridCellSize);
+    context.lineTo(gridCellSize * gridWidth, y * gridCellSize);
   }
   context.stroke();
 

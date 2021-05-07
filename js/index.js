@@ -8,5 +8,7 @@ create(document.getElementById("playground"), {
   content: examples.blocks,
   enableUpdate: true,
   enableVisualView: true,
-  enableClearOnUpdate: true
+  enableClearOnUpdate: true,
+  gridWidth: 10,
+  gridHeight: 20
 });

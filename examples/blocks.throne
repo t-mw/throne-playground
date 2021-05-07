@@ -1,11 +1,11 @@
-fall-timer 5 . default-fall-timer 5 . block-id 0 . falling-shape-id 0 . max-width 20 . max-height 20
+fall-timer 5 . default-fall-timer 5 . block-id 0 . falling-shape-id 0 . max-width 10 . max-height 20
 
 #update . !shape _X _Y _BLOCKS . falling-shape-id ID . + ID 1 ID' = falling-shape-id ID' . #new-shape
 #update . $shape _X _Y _BLOCKS = #input-u
 
-#new-shape . $max-height H = new-shape 9 H ((block -1 0) ((block 0 0) ((block 1 0) ((block 0 1) (cons))))) . #shape-to-blocks (#input-lr)
-#new-shape . $max-height H = new-shape 9 H ((block 0 -1) ((block 0 0) ((block 0 1) (cons)))) . #shape-to-blocks (#input-lr)
-#new-shape . $max-height H = new-shape 9 H ((block 0 -1) ((block 0 0) ((block 0 1) ((block 1 1) (cons))))) . #shape-to-blocks (#input-lr)
+#new-shape . $max-height H = new-shape 4 H ((block -1 0) ((block 0 0) ((block 1 0) ((block 0 1) (cons))))) . #shape-to-blocks (#input-lr)
+#new-shape . $max-height H = new-shape 4 H ((block 0 -1) ((block 0 0) ((block 0 1) (cons)))) . #shape-to-blocks (#input-lr)
+#new-shape . $max-height H = new-shape 4 H ((block 0 -1) ((block 0 0) ((block 0 1) ((block 1 1) (cons))))) . #shape-to-blocks (#input-lr)
 
 #shape-to-blocks RETURN: {
     block-falling _ID _X _Y = ()
