@@ -8,6 +8,7 @@
   "dependencies": {
     "@joeattardi/emoji-button": "^4.6.0",
     "@popperjs/core": "^2.9.2",
+    "clipboard": "^2.0.8",
     "focus-trap": "^6.4.0",
     "grapheme-splitter": "^1.0.4",
     "jsondiffpatch": "^0.4.1",

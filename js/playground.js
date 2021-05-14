@@ -5,6 +5,7 @@ import {
 } from "./editor";
 import { LiveView } from "./live-view";
 import { SettingsWindow } from "./settings";
+import { optionsFromShareFormat, optionsToShareFormat } from "./share";
 import { debounce } from "./utility";
 import playgroundTemplate from "../html/playground.html";
 import "../css/playground.scss";
@@ -13,7 +14,6 @@ import { EmojiButton } from "@joeattardi/emoji-button";
 
 const DEFAULT_UPDATE_FREQUENCY = 4; // updates per second
 const DEFAULT_GRID_SIZE = 20;
-const EMBEDDED_OPTIONS_KEY = "throne-playground-script";
 
 export function create(rootEl, options = {}) {
   let script = "";
@@ -55,21 +55,9 @@ export function create(rootEl, options = {}) {
   });
 
   const setOptions = options => {
+    options = optionsFromShareFormat(options);
     if (typeof options.script === "string") {
-      const firstLine = options.script.split("\n", 1)[0];
-
-      if (firstLine.includes(EMBEDDED_OPTIONS_KEY)) {
-        const optionsLine = firstLine.replace("//", "");
-        const embeddedOptions = JSON.parse(optionsLine);
-
-        // mix options, but input options take precedence over embedded options
-        options = Object.assign(embeddedOptions, options);
-
-        // strip first line
-        script = options.script.substring(options.script.indexOf("\n") + 1).trimStart();
-      } else {
-        script = options.script;
-      }
+      script = options.script;
     }
     if (options.enableUpdate != null) {
       enableUpdate = !!options.enableUpdate;
@@ -105,7 +93,8 @@ export function create(rootEl, options = {}) {
     enableClearOnUpdate,
     updateFrequency,
     gridWidth,
-    gridHeight
+    gridHeight,
+    shareContent: () => optionsToShareFormat(getOptions)
   });
 
   const settingsButtonEl = rootEl.querySelector("[data-settings-button]");
@@ -269,15 +258,6 @@ export function create(rootEl, options = {}) {
     },
     get context() {
       return context;
-    },
-    "export": () => {
-      const embeddedOptions = getOptions();
-      embeddedOptions[EMBEDDED_OPTIONS_KEY] = "0.1.0";
-
-      const script = embeddedOptions.script;
-      delete embeddedOptions.script;
-
-      return "// " + JSON.stringify(embeddedOptions) + "\n\n" + script;
     }
   };
 }

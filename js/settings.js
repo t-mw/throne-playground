@@ -1,28 +1,30 @@
 import settingsTemplate from "../html/settings.html";
 
+import Clipboard from "clipboard";
 import { createFocusTrap } from "focus-trap";
 import { createPopper, Instance as Popper } from "@popperjs/core";
 import { TinyEmitter as Emitter } from "tiny-emitter";
 
 class SettingsWindow {
-  constructor(rootEl, initialSettings) {
+  constructor(rootEl, options) {
     this.settingsEl = document.createElement("div");
     this.settingsEl.className = "settings-window";
     this.settingsEl.innerHTML = settingsTemplate;
     this.settingsEl.style.display = "none";
     rootEl.appendChild(this.settingsEl);
 
-    this.enableUpdate = initialSettings.enableUpdate;
-    this.enableClearOnUpdate = initialSettings.enableUpdate;
-    this.updateFrequency = initialSettings.updateFrequency;
-    this.gridWidth = initialSettings.gridWidth;
-    this.gridHeight = initialSettings.gridHeight;
+    this.enableUpdate = options.enableUpdate;
+    this.enableClearOnUpdate = options.enableUpdate;
+    this.updateFrequency = options.updateFrequency;
+    this.gridWidth = options.gridWidth;
+    this.gridHeight = options.gridHeight;
 
     const updateCheckboxEl = this.settingsEl.querySelector("[data-update-checkbox]");
     const clearOnUpdateCheckboxEl = this.settingsEl.querySelector("[data-clear-on-update-checkbox]");
     const updateFrequencyInputEl = this.settingsEl.querySelector("[data-update-frequency-input]");
     const gridWidthInputEl = this.settingsEl.querySelector("[data-grid-width-input]");
     const gridHeightInputEl = this.settingsEl.querySelector("[data-grid-height-input]");
+    const shareButtonEl = this.settingsEl.querySelector("[data-share-button]");
 
     updateCheckboxEl.checked = this.enableUpdate;
     updateCheckboxEl.addEventListener("change", e => {
@@ -52,6 +54,11 @@ class SettingsWindow {
     gridHeightInputEl.addEventListener("change", e => {
       this.gridHeight = gridHeightInputEl.value;
       this.events.emit("change");
+    });
+
+    this.clipboard = new Clipboard(shareButtonEl, {
+      container: this.settingsEl,
+      text: options.shareContent
     });
 
     this.visible = false;
