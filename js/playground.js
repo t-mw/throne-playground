@@ -15,7 +15,7 @@ import { EmojiButton } from "@joeattardi/emoji-button";
 const DEFAULT_UPDATE_FREQUENCY = 4; // updates per second
 const DEFAULT_GRID_SIZE = 20;
 
-export function create(rootEl, options) {
+export function create(rootEl, options = {}) {
   let {
     script,
     enableUpdate,

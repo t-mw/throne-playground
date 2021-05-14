@@ -8,9 +8,10 @@ const playgroundEl = document.getElementById("playground");
 
 const url = new URL(window.location.href);
 const gist = url.searchParams.get("gist");
+const example = url.searchParams.get("example");
 
 if (gist) {
-  const playground = create(playgroundEl, "");
+  const playground = create(playgroundEl);
   fetch("https://api.github.com/gists/" + gist)
     .then(response => response.json())
     .then(json => {
@@ -20,6 +21,8 @@ if (gist) {
         break;
       }
     })
+} else if (example) {
+  create(playgroundEl, examples[example]);
 } else {
-  create(playgroundEl, examples.blocks);
+  create(playgroundEl);
 }
