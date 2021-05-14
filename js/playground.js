@@ -206,7 +206,6 @@ export function create(rootEl, options = {}) {
         setControlState("ready", controlEls);
         try {
           context = module.Context.from_text(editor.monacoEditor.getValue());
-          window.context = context;
         } catch (e) {
           context = null;
           setEditorError(e, editor);
@@ -297,6 +296,7 @@ export function create(rootEl, options = {}) {
     set script(v) {
       editor.monacoEditor.setValue(v);
     }
+    get context() { return context; },
   };
 }
 

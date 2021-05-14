@@ -11,19 +11,19 @@ const gist = url.searchParams.get("gist");
 const example = url.searchParams.get("example");
 
 if (gist) {
-  const playground = create(playgroundEl);
+  window.playground = create(playgroundEl);
   const gistSplit = gist.split("/");
   fetch("https://api.github.com/gists/" + gistSplit[gistSplit.length - 1])
     .then(response => response.json())
     .then(json => {
       const files = json.files;
       for (const [_, file] of Object.entries(files)) {
-        playground.script = file.content;
+        window.playground.script = file.content;
         break;
       }
     })
 } else if (example) {
-  create(playgroundEl, examples[example]);
+  window.playground = create(playgroundEl, examples[example]);
 } else {
-  create(playgroundEl);
+  window.playground = create(playgroundEl);
 }
