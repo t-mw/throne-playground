@@ -289,6 +289,15 @@ export function create(rootEl, options) {
       });
     })
     .catch(console.error);
+
+  return {
+    get script() {
+      return editor.monacoEditor.getValue();
+    },
+    set script(v) {
+      editor.monacoEditor.setValue(v);
+    }
+  };
 }
 
 function updateContext(context, inputState, options, editor) {

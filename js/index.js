@@ -4,4 +4,22 @@ import "minireset.css";
 import "../css/style.css";
 import { create } from "./playground.js";
 
-create(document.getElementById("playground"), examples.blocks);
+const playgroundEl = document.getElementById("playground");
+
+const url = new URL(window.location.href);
+const gist = url.searchParams.get("gist");
+
+if (gist) {
+  const playground = create(playgroundEl, "");
+  fetch("https://api.github.com/gists/" + gist)
+    .then(response => response.json())
+    .then(json => {
+      const files = json.files;
+      for (const [_, file] of Object.entries(files)) {
+        playground.script = file.content;
+        break;
+      }
+    })
+} else {
+  create(playgroundEl, examples.blocks);
+}
