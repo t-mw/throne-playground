@@ -16,7 +16,17 @@ const DEFAULT_UPDATE_FREQUENCY = 4; // updates per second
 const DEFAULT_GRID_SIZE = 20;
 
 export function create(rootEl, options = {}) {
-  let {
+  let script = "";
+  let enableUpdate = false;
+  let enableVisualMode = false;
+  let enableClearOnUpdate = false;
+  let updateFrequency = DEFAULT_UPDATE_FREQUENCY;
+  let gridWidth = DEFAULT_GRID_SIZE;
+  let gridHeight = DEFAULT_GRID_SIZE;
+
+  let editor = null;
+
+  const getOptions = () => ({
     script,
     enableUpdate,
     enableVisualMode,
@@ -24,27 +34,37 @@ export function create(rootEl, options = {}) {
     updateFrequency,
     gridWidth,
     gridHeight
-  } = options;
+  });
 
-  if (typeof script !== "string") {
-    script = "";
-  }
+  const setOptions = (options) => {
+    if (typeof options.script === "string") {
+      script = options.script;
+    }
+    if (options.enableUpdate != null) {
+      enableUpdate = !!options.enableUpdate;
+    }
+    if (options.enableVisualMode != null) {
+      enableVisualMode = !!options.enableVisualMode;
+    }
+    if (options.enableClearOnUpdate != null) {
+      enableClearOnUpdate = !!options.enableClearOnUpdate;
+    }
+    if (typeof options.updateFrequency === "number") {
+      updateFrequency = options.updateFrequency;
+    }
+    if (typeof options.gridWidth === "number") {
+      gridWidth = options.gridWidth;
+    }
+    if (typeof options.gridHeight === "number") {
+      gridHeight = options.gridHeight;
+    }
+    if (editor != null) {
+      // setting editor value will trigger live view update
+      editor.monacoEditor.setValue(script);
+    }
+  };
 
-  enableUpdate = !!enableUpdate;
-  enableVisualMode = !!enableVisualMode;
-  enableClearOnUpdate = !!enableClearOnUpdate;
-
-  if (typeof updateFrequency !== "number") {
-    updateFrequency = DEFAULT_UPDATE_FREQUENCY;
-  }
-
-  if (typeof gridWidth !== "number") {
-    gridWidth = DEFAULT_GRID_SIZE;
-  }
-
-  if (typeof gridHeight !== "number") {
-    gridHeight = DEFAULT_GRID_SIZE;
-  }
+  setOptions(options);
 
   const playgroundEl = document.createElement("div");
   playgroundEl.innerHTML = playgroundTemplate;
@@ -62,7 +82,7 @@ export function create(rootEl, options = {}) {
     reset: rootEl.querySelector("[data-reset-button]")
   };
 
-  const editor = createEditor(editorEl, script);
+  editor = createEditor(editorEl, script);
   window.addEventListener("resize", debounce(() => editor.monacoEditor.layout(), 250));
 
   const settingsWindow = new SettingsWindow(playgroundEl, {
@@ -84,13 +104,13 @@ export function create(rootEl, options = {}) {
   });
 
   settingsWindow.on("change", () => {
-    enableUpdate = settingsWindow.enableUpdate;
-    enableClearOnUpdate = settingsWindow.enableClearOnUpdate;
-    updateFrequency = settingsWindow.updateFrequency;
-    gridWidth = settingsWindow.gridWidth;
-    gridHeight = settingsWindow.gridHeight;
-
-    updateLiveViewWithDiff(context, enableVisualMode);
+    setOptions({
+      enableUpdate: settingsWindow.enableUpdate,
+      enableClearOnUpdate: settingsWindow.enableClearOnUpdate,
+      updateFrequency: settingsWindow.updateFrequency,
+      gridWidth: settingsWindow.gridWidth,
+      gridHeight: settingsWindow.gridHeight,
+    });
   });
 
   const emojiPicker = new EmojiButton({
@@ -120,12 +140,12 @@ export function create(rootEl, options = {}) {
   visualCheckboxEl.checked = enableVisualMode;
   visualCheckboxEl.addEventListener("change", e => {
     enableVisualMode = visualCheckboxEl.checked;
-    updateLiveViewWithDiff(context, enableVisualMode);
+    updateLiveViewWithDiff(context);
   });
 
   window.addEventListener("resize", () => {
     if (enableVisualMode) {
-      updateLiveViewWithDiff(context, enableVisualMode);
+      updateLiveViewWithDiff(context);
     }
   });
 
@@ -141,7 +161,7 @@ export function create(rootEl, options = {}) {
     mouseGridPos: [-1, -1]
   };
 
-  const updateLiveViewWithDiff = (context, enableVisualMode) => {
+  const updateLiveViewWithDiff = (context) => {
     if (context == null) {
       return;
     }
@@ -200,12 +220,12 @@ export function create(rootEl, options = {}) {
       module.init();
 
       let requestAnimationFrameId = null;
-      const setContextFromEditor = () => {
+      const reloadContext = () => {
         window.cancelAnimationFrame(requestAnimationFrameId);
         setEditorError(null, editor);
         setControlState("ready", controlEls);
         try {
-          context = module.Context.from_text(editor.monacoEditor.getValue());
+          context = module.Context.from_text(script);
         } catch (e) {
           context = null;
           setEditorError(e, editor);
@@ -213,15 +233,16 @@ export function create(rootEl, options = {}) {
         }
 
         previousState = [];
-        updateLiveViewWithDiff(context, enableVisualMode);
+        updateLiveViewWithDiff(context);
       };
 
-      setContextFromEditor();
+      reloadContext();
 
       const updateEditorDecorationsDebounced = debounce(updateEditorDecorations, 1000);
       editor.monacoEditor.onDidChangeModelContent(() => {
+        script = editor.monacoEditor.getValue();
         updateEditorDecorationsDebounced(editor);
-        setContextFromEditor();
+        reloadContext();
       });
 
       controlEls.play.addEventListener("click", e => {
@@ -257,7 +278,7 @@ export function create(rootEl, options = {}) {
               if (!updateContext(context, inputState, options, editor)) {
                 return;
               }
-              updateLiveViewWithDiff(context, enableVisualMode);
+              updateLiveViewWithDiff(context);
             }
 
             if (enableUpdate) {
@@ -273,7 +294,7 @@ export function create(rootEl, options = {}) {
           if (!updateContext(context, inputState,  options, editor)) {
             return;
           }
-          updateLiveViewWithDiff(context, enableVisualMode);
+          updateLiveViewWithDiff(context);
           setControlState("finished", controlEls);
         }
       });
@@ -284,18 +305,16 @@ export function create(rootEl, options = {}) {
       });
 
       controlEls.reset.addEventListener("click", e => {
-        setContextFromEditor();
+        reloadContext();
       });
     })
     .catch(console.error);
 
   return {
-    get script() {
-      return editor.monacoEditor.getValue();
-    },
-    set script(v) {
-      editor.monacoEditor.setValue(v);
-    }
+    get options() { return getOptions(); },
+    set options(v) { setOptions(v); },
+    get script() { return getOptions().script; },
+    set script(v) { setOptions({ script: v }); },
     get context() { return context; },
   };
 }
