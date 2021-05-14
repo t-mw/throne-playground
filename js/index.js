@@ -1,8 +1,8 @@
-import * as examples from "./examples.js";
+import * as examples from "./examples";
 
 import "minireset.css";
 import "../css/style.css";
-import { create } from "./playground.js";
+import { create } from "./playground";
 
 const playgroundEl = document.getElementById("playground");
 

@@ -1,4 +1,4 @@
-import { hashCode } from "./utility.js";
+import { hashCode } from "./utility";
 
 import * as monaco from "monaco-editor";
 
