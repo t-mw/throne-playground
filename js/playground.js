@@ -141,6 +141,9 @@ export function create(rootEl, options = {}) {
   visualCheckboxEl.checked = enableVisualMode;
   visualCheckboxEl.addEventListener("change", e => {
     enableVisualMode = visualCheckboxEl.checked;
+    if (enableVisualMode) {
+      setTimeout(() => liveView.focus());
+    }
     liveView.update(context, getOptions());
   });
 
