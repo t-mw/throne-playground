@@ -12,7 +12,8 @@ const example = url.searchParams.get("example");
 
 if (gist) {
   const playground = create(playgroundEl);
-  fetch("https://api.github.com/gists/" + gist)
+  const gistSplit = gist.split("/");
+  fetch("https://api.github.com/gists/" + gistSplit[gistSplit.length - 1])
     .then(response => response.json())
     .then(json => {
       const files = json.files;
