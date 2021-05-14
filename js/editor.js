@@ -103,10 +103,8 @@ export function updateDecorations(editor) {
         range: new monaco.Range(lineNo, colNo, lineNo, colNo + atom.length),
         options: { inlineClassName: "atom-" + decorationIdx.toString() }
       });
-
       atomIdx += 1;
     }
-
     colNo += 1;
   }
 

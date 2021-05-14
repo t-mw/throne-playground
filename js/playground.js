@@ -53,7 +53,7 @@ export function create(rootEl, options = {}) {
     gridHeight
   });
 
-  const setOptions = (options) => {
+  const setOptions = options => {
     if (typeof options.script === "string") {
       script = options.script;
     }
@@ -153,101 +153,109 @@ export function create(rootEl, options = {}) {
     }
   });
 
-  import("../../throne-rs/pkg/index.js")
-    .then(module => {
-      module.init();
+  import("../../throne-rs/pkg/index.js").then(module => {
+    module.init();
 
-      let requestAnimationFrameId = null;
-      const reloadContext = () => {
-        window.cancelAnimationFrame(requestAnimationFrameId);
-        setEditorError(null, editor);
-        setControlState("ready", controlEls);
-        try {
-          context = module.Context.from_text(script);
-        } catch (e) {
-          context = null;
-          setEditorError(e, editor);
-          setControlState("error", controlEls);
-        }
-        liveView.reset(context, getOptions());
-      };
+    let requestAnimationFrameId = null;
+    const reloadContext = () => {
+      window.cancelAnimationFrame(requestAnimationFrameId);
+      setEditorError(null, editor);
+      setControlState("ready", controlEls);
+      try {
+        context = module.Context.from_text(script);
+      } catch (e) {
+        context = null;
+        setEditorError(e, editor);
+        setControlState("error", controlEls);
+      }
+      liveView.reset(context, getOptions());
+    };
 
+    reloadContext();
+
+    const updateEditorDecorationsDebounced = debounce(updateEditorDecorations, 1000);
+    editor.monacoEditor.onDidChangeModelContent(() => {
+      script = editor.monacoEditor.getValue();
+      updateEditorDecorationsDebounced(editor);
       reloadContext();
+    });
 
-      const updateEditorDecorationsDebounced = debounce(updateEditorDecorations, 1000);
-      editor.monacoEditor.onDidChangeModelContent(() => {
-        script = editor.monacoEditor.getValue();
-        updateEditorDecorationsDebounced(editor);
-        reloadContext();
-      });
+    controlEls.play.addEventListener("click", e => {
+      if (context == null) {
+        return;
+      }
 
-      controlEls.play.addEventListener("click", e => {
-        if (context == null) {
+      liveView.focus();
+
+      if (enableUpdate) {
+        setControlState("playing", controlEls);
+
+        let prevTimestamp = null;
+        let frameTimer = 0;
+
+        const step = (timestamp) => {
+          if (prevTimestamp == null) {
+            prevTimestamp = timestamp;
+          }
+
+          const dt = timestamp - prevTimestamp;
+          prevTimestamp = timestamp;
+
+          frameTimer -= dt;
+
+          if (frameTimer < 0) {
+            frameTimer += 1000 / updateFrequency;
+            const options = { enableClearOnUpdate, appendUpdate: true };
+            if (!updateContext(context, liveView.inputState, options, editor)) {
+              return;
+            }
+            liveView.update(context, getOptions());
+          }
+
+          if (enableUpdate) {
+            requestAnimationFrameId = window.requestAnimationFrame(step);
+          } else {
+            setControlState("finished", controlEls);
+          }
+        };
+
+        requestAnimationFrameId = window.requestAnimationFrame(step);
+      } else {
+        const options = { enableClearOnUpdate: false, appendUpdate: false };
+        if (!updateContext(context, liveView.inputState,  options, editor)) {
           return;
         }
+        liveView.update(context, getOptions());
+        setControlState("finished", controlEls);
+      }
+    });
 
-        liveView.focus();
+    controlEls.pause.addEventListener("click", e => {
+      window.cancelAnimationFrame(requestAnimationFrameId);
+      setControlState("paused", controlEls);
+    });
 
-        if (enableUpdate) {
-          setControlState("playing", controlEls);
-
-          let prevTimestamp = null;
-          let frameTimer = 0;
-
-          const step = (timestamp) => {
-            if (prevTimestamp == null) {
-              prevTimestamp = timestamp;
-            }
-
-            const dt = timestamp - prevTimestamp;
-            prevTimestamp = timestamp;
-
-            frameTimer -= dt;
-
-            if (frameTimer < 0) {
-              frameTimer += 1000 / updateFrequency;
-              const options = { enableClearOnUpdate, appendUpdate: true };
-              if (!updateContext(context, liveView.inputState, options, editor)) {
-                return;
-              }
-              liveView.update(context, getOptions());
-            }
-
-            if (enableUpdate) {
-              requestAnimationFrameId = window.requestAnimationFrame(step);
-            } else {
-              setControlState("finished", controlEls);
-            }
-          };
-
-          requestAnimationFrameId = window.requestAnimationFrame(step);
-        } else {
-          const options = { enableClearOnUpdate: false, appendUpdate: false };
-          if (!updateContext(context, liveView.inputState,  options, editor)) {
-            return;
-          }
-          liveView.update(context, getOptions());
-          setControlState("finished", controlEls);
-        }
-      });
-
-      controlEls.pause.addEventListener("click", e => {
-        window.cancelAnimationFrame(requestAnimationFrameId);
-        setControlState("paused", controlEls);
-      });
-
-      controlEls.reset.addEventListener("click", e => {
-        reloadContext();
-      });
-    })
-    .catch(console.error);
+    controlEls.reset.addEventListener("click", e => {
+      reloadContext();
+    });
+  }).catch(console.error);
 
   return {
-    get options() { return getOptions(); },
-    set options(v) { setOptions(v); },
-    get script() { return getOptions().script; },
-    set script(v) { setOptions({ script: v }); },
-    get context() { return context; },
+    get options() {
+      return getOptions();
+    },
+    set options(v) {
+      setOptions(v);
+    },
+    get script() {
+      return getOptions().script;
+    },
+    set script(v) {
+      setOptions({ script: v });
+    },
+    get context() {
+      return context;
+    },
   };
 }
 
