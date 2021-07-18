@@ -13,49 +13,44 @@ class SettingsWindow {
     this.settingsEl.style.display = "none";
     rootEl.appendChild(this.settingsEl);
 
-    this.enableUpdate = options.enableUpdate;
-    this.enableClearOnUpdate = options.enableUpdate;
-    this.updateFrequency = options.updateFrequency;
-    this.gridWidth = options.gridWidth;
-    this.gridHeight = options.gridHeight;
+    this._enableUpdate = options.enableUpdate;
+    this._enableClearOnUpdate = options.enableUpdate;
+    this._updateFrequency = options.updateFrequency;
+    this._gridWidth = options.gridWidth;
+    this._gridHeight = options.gridHeight;
 
-    const updateCheckboxEl = this.settingsEl.querySelector("[data-update-checkbox]");
-    const clearOnUpdateCheckboxEl = this.settingsEl.querySelector("[data-clear-on-update-checkbox]");
-    const updateFrequencyInputEl = this.settingsEl.querySelector("[data-update-frequency-input]");
-    const gridWidthInputEl = this.settingsEl.querySelector("[data-grid-width-input]");
-    const gridHeightInputEl = this.settingsEl.querySelector("[data-grid-height-input]");
+    this.updateCheckboxEl = this.settingsEl.querySelector("[data-update-checkbox]");
+    this.clearOnUpdateCheckboxEl = this.settingsEl.querySelector("[data-clear-on-update-checkbox]");
+    this.updateFrequencyInputEl = this.settingsEl.querySelector("[data-update-frequency-input]");
+    this.gridWidthInputEl = this.settingsEl.querySelector("[data-grid-width-input]");
+    this.gridHeightInputEl = this.settingsEl.querySelector("[data-grid-height-input]");
+
+    this.updateCheckboxEl.checked = this._enableUpdate;
+    this.updateCheckboxEl.addEventListener("change", e => {
+      this._enableUpdate = this.updateCheckboxEl.checked;
+    });
+
+    this.clearOnUpdateCheckboxEl.checked = this._enableClearOnUpdate;
+    this.clearOnUpdateCheckboxEl.addEventListener("change", e => {
+      this._enableClearOnUpdate = this.clearOnUpdateCheckboxEl.checked;
+    });
+
+    this.updateFrequencyInputEl.value = this._updateFrequency;
+    this.updateFrequencyInputEl.addEventListener("change", e => {
+      this._updateFrequency = this.updateFrequencyInputEl.value;
+    });
+
+    this.gridWidthInputEl.value = this._gridWidth;
+    this.gridWidthInputEl.addEventListener("change", e => {
+      this._gridWidth = this.gridWidthInputEl.value;
+    });
+
+    this.gridHeightInputEl.value = this._gridHeight;
+    this.gridHeightInputEl.addEventListener("change", e => {
+      this._gridHeight = this.gridHeightInputEl.value;
+    });
+
     const shareButtonEl = this.settingsEl.querySelector("[data-share-button]");
-
-    updateCheckboxEl.checked = this.enableUpdate;
-    updateCheckboxEl.addEventListener("change", e => {
-      this.enableUpdate = updateCheckboxEl.checked;
-      this.events.emit("change");
-    });
-
-    clearOnUpdateCheckboxEl.checked = this.enableClearOnUpdate;
-    clearOnUpdateCheckboxEl.addEventListener("change", e => {
-      this.enableClearOnUpdate = clearOnUpdateCheckboxEl.checked;
-      this.events.emit("change");
-    });
-
-    updateFrequencyInputEl.value = this.updateFrequency;
-    updateFrequencyInputEl.addEventListener("change", e => {
-      this.updateFrequency = updateFrequencyInputEl.value;
-      this.events.emit("change");
-    });
-
-    gridWidthInputEl.value = this.gridWidth;
-    gridWidthInputEl.addEventListener("change", e => {
-      this.gridWidth = gridWidthInputEl.value;
-      this.events.emit("change");
-    });
-
-    gridHeightInputEl.value = this.gridHeight;
-    gridHeightInputEl.addEventListener("change", e => {
-      this.gridHeight = gridHeightInputEl.value;
-      this.events.emit("change");
-    });
-
     this.clipboard = new Clipboard(shareButtonEl, {
       container: this.settingsEl,
       text: options.shareContent
@@ -68,6 +63,51 @@ class SettingsWindow {
 
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.onDocumentKeydown = this.onDocumentKeydown.bind(this);
+  }
+
+  get enableUpdate() {
+    return this._enableUpdate;
+  }
+
+  set enableUpdate(v) {
+    this._enableUpdate = v;
+    this.updateCheckboxEl.checked = v;
+  }
+
+  get enableClearOnUpdate() {
+    return this._enableClearOnUpdate;
+  }
+
+  set enableClearOnUpdate(v) {
+    this._enableClearOnUpdate = v;
+    this.clearOnUpdateCheckboxEl.checked = v;
+  }
+
+  get updateFrequency() {
+    return this._updateFrequency;
+  }
+
+  set updateFrequency(v) {
+    this._updateFrequency = v;
+    this.updateFrequencyInputEl.value = v;
+  }
+
+  get gridWidth() {
+    return this._gridWidth;
+  }
+
+  set gridWidth(v) {
+    this._gridWidth = v;
+    this.gridWidthInputEl.value = v;
+  }
+
+  get gridHeight() {
+    return this._gridHeight;
+  }
+
+  set gridHeight(v) {
+    this._gridHeight = v;
+    this.gridHeightInputEl.value = v;
   }
 
   toggle(referenceEl) {

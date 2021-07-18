@@ -17,17 +17,11 @@ const DEFAULT_GRID_SIZE = 20;
 
 export function create(rootEl, options = {}) {
   let script = "";
-  let enableUpdate = false;
   let enableVisualMode = false;
-  let enableClearOnUpdate = false;
-  let updateFrequency = DEFAULT_UPDATE_FREQUENCY;
-  let gridWidth = DEFAULT_GRID_SIZE;
-  let gridHeight = DEFAULT_GRID_SIZE;
 
   const playgroundEl = document.createElement("div");
   playgroundEl.innerHTML = playgroundTemplate;
   playgroundEl.classList.add("throne-playground");
-
   rootEl.appendChild(playgroundEl);
 
   const editorEl = rootEl.querySelector(".editor");
@@ -43,15 +37,23 @@ export function create(rootEl, options = {}) {
   let editor = null;
   let context = null;
   const liveView = new LiveView(liveViewEl);
+  const settingsWindow = new SettingsWindow(playgroundEl, {
+    enableUpdate: false,
+    enableClearOnUpdate: false,
+    updateFrequency: DEFAULT_UPDATE_FREQUENCY,
+    gridWidth: DEFAULT_GRID_SIZE,
+    gridHeight: DEFAULT_GRID_SIZE,
+    shareContent: () => optionsToShareFormat(getOptions)
+  });
 
   const getOptions = () => ({
     script,
-    enableUpdate,
-    enableVisualMode,
-    enableClearOnUpdate,
-    updateFrequency,
-    gridWidth,
-    gridHeight
+    enableUpdate: settingsWindow.enableUpdate,
+    enableVisualMode: enableVisualMode,
+    enableClearOnUpdate: settingsWindow.enableClearOnUpdate,
+    updateFrequency: settingsWindow.updateFrequency,
+    gridWidth: settingsWindow.gridWidth,
+    gridHeight: settingsWindow.gridHeight
   });
 
   const setOptions = options => {
@@ -60,22 +62,23 @@ export function create(rootEl, options = {}) {
       script = options.script;
     }
     if (options.enableUpdate != null) {
-      enableUpdate = !!options.enableUpdate;
+      settingsWindow.enableUpdate = !!options.enableUpdate;
     }
     if (options.enableVisualMode != null) {
       enableVisualMode = !!options.enableVisualMode;
+      visualCheckboxEl.checked = enableVisualMode;
     }
     if (options.enableClearOnUpdate != null) {
-      enableClearOnUpdate = !!options.enableClearOnUpdate;
+      settingsWindow.enableClearOnUpdate = !!options.enableClearOnUpdate;
     }
     if (typeof options.updateFrequency === "number") {
-      updateFrequency = options.updateFrequency;
+      settingsWindow.updateFrequency = options.updateFrequency;
     }
     if (typeof options.gridWidth === "number") {
-      gridWidth = options.gridWidth;
+      settingsWindow.gridWidth = options.gridWidth;
     }
     if (typeof options.gridHeight === "number") {
-      gridHeight = options.gridHeight;
+      settingsWindow.gridHeight = options.gridHeight;
     }
     if (editor != null) {
       // setting editor value will trigger live view update
@@ -88,15 +91,6 @@ export function create(rootEl, options = {}) {
   editor = createEditor(editorEl, script);
   window.addEventListener("resize", debounce(() => editor.monacoEditor.layout(), 250));
 
-  const settingsWindow = new SettingsWindow(playgroundEl, {
-    enableUpdate,
-    enableClearOnUpdate,
-    updateFrequency,
-    gridWidth,
-    gridHeight,
-    shareContent: () => optionsToShareFormat(getOptions)
-  });
-
   const settingsButtonEl = rootEl.querySelector("[data-settings-button]");
   settingsButtonEl.addEventListener("click", () => {
     settingsButtonEl.classList.add("active");
@@ -105,16 +99,6 @@ export function create(rootEl, options = {}) {
 
   settingsWindow.on("hidden", () => {
     settingsButtonEl.classList.remove("active");
-  });
-
-  settingsWindow.on("change", () => {
-    setOptions({
-      enableUpdate: settingsWindow.enableUpdate,
-      enableClearOnUpdate: settingsWindow.enableClearOnUpdate,
-      updateFrequency: settingsWindow.updateFrequency,
-      gridWidth: settingsWindow.gridWidth,
-      gridHeight: settingsWindow.gridHeight,
-    });
   });
 
   const emojiPicker = new EmojiButton({
@@ -141,7 +125,6 @@ export function create(rootEl, options = {}) {
     emojiButtonEl.classList.remove("active");
   });
 
-  visualCheckboxEl.checked = enableVisualMode;
   visualCheckboxEl.addEventListener("change", e => {
     enableVisualMode = visualCheckboxEl.checked;
     if (enableVisualMode) {
@@ -190,7 +173,7 @@ export function create(rootEl, options = {}) {
 
       liveView.focus();
 
-      if (enableUpdate) {
+      if (settingsWindow.enableUpdate) {
         setControlState("playing", controlEls);
 
         let prevTimestamp = null;
@@ -207,15 +190,18 @@ export function create(rootEl, options = {}) {
           frameTimer -= dt;
 
           if (frameTimer < 0) {
-            frameTimer += 1000 / updateFrequency;
-            const options = { enableClearOnUpdate, appendUpdate: true };
+            frameTimer += 1000 / settingsWindow.updateFrequency;
+            const options = {
+              enableClearOnUpdate: settingsWindow.enableClearOnUpdate,
+              appendUpdate: true
+            };
             if (!updateContext(context, liveView.inputState, options, editor)) {
               return;
             }
             liveView.update(context, getOptions());
           }
 
-          if (enableUpdate) {
+          if (settingsWindow.enableUpdate) {
             requestAnimationFrameId = window.requestAnimationFrame(step);
           } else {
             setControlState("finished", controlEls);
