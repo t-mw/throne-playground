@@ -1,9 +1,14 @@
+import helloWorldScript from "../examples/hello-world.throne";
 import familyScript from "../examples/family.throne";
 import guessingGameScript from "../examples/guessing-game.throne";
 import drawScript from "../examples/draw.throne";
 import gameOfLifeScript from "../examples/game-of-life.throne";
 import blocksScript from "../examples/blocks.throne";
 
+const helloWorld = {
+  script: helloWorldScript,
+  enableVisualMode: true
+};
 const family = { script: familyScript };
 const guessingGame = { script: guessingGameScript };
 const draw = {
@@ -28,6 +33,7 @@ const blocks = {
 };
 
 export {
+  helloWorld,
   family,
   guessingGame,
   draw,

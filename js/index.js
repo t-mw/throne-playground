@@ -25,5 +25,5 @@ if (gist) {
 } else if (example) {
   window.playground = create(playgroundEl, examples[example]);
 } else {
-  window.playground = create(playgroundEl);
+  window.playground = create(playgroundEl, examples.helloWorld);
 }
