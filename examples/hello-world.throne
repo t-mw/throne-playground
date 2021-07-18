@@ -1,1 +1,2 @@
-draw "Hello World"
+draw "Hello"
+draw "Hello" = draw "World"
