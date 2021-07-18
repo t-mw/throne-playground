@@ -156,7 +156,7 @@ export function create(rootEl, options = {}) {
     }
   });
 
-  import("../../throne-rs/pkg/index.js").then(module => {
+  import("../../throne/pkg/index.js").then(module => {
     module.init();
 
     let requestAnimationFrameId = null;

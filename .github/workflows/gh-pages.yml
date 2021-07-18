@@ -1,0 +1,45 @@
+# Restrict CI to tagged commits
+on:
+  push:
+    tags:
+    - '*'
+
+name: throne-playground
+
+jobs:
+  deploy:
+    name: Deploy to github pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout throne sources
+        uses: actions/checkout@v2
+        with:
+          repository: t-mw/throne
+          ref: refs/heads/master
+          path: throne
+
+      - name: Checkout throne-playground sources
+        uses: actions/checkout@v2
+        with:
+          path: throne-playground
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build throne
+        working-directory: throne
+        run: |
+          npm install
+          npm run build
+
+      - name: Build throne-playground
+        working-directory: throne-playground
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: throne-playground/dist
