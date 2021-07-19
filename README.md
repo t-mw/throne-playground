@@ -10,6 +10,11 @@ A web-based editor for the [throne](https://www.github.com/t-mw/throne) programm
 - [Game of Life](https://t-mw.github.io/throne-playground/?gist=t-mw/aa714f7f160ac92d346edbc2f0230045)
 - [Blocks](https://t-mw.github.io/throne-playground/?gist=t-mw/81320c91f5fd128e397b247d1296700e)
 
+## Debugging
+
+Although script errors are marked in the editor when they occur, the throne context for your script can also be inspected in more detail through `window.playground.context`.
+For example, to print a log of the current state and compiled rules execute `playground.context.print()` in the browser console.
+
 ## Building
 
 1. Clone [throne](https://www.github.com/t-mw/throne) to a directory.
