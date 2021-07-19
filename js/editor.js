@@ -66,7 +66,8 @@ export function create(element, initialValue) {
     minimap: {
       enabled: false
     },
-    scrollBeyondLastLine: false
+    scrollBeyondLastLine: false,
+    wordWrap: "on"
   });
 
   const editor = { monacoEditor, decorations: [] };
