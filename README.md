@@ -4,9 +4,9 @@ A web-based editor for the [throne](https://www.github.com/t-mw/throne) programm
 
 ## Usage
 
-- Press the play button in the bottom right of the page to begin executing a script.
-- Hover over any button to view a tooltip describing what the button does.
-- To learn how to read and write the language, read the [throne](https://www.github.com/t-mw/throne) documentation and view the examples below.
+1. Press the play button in the bottom right of the page to begin executing a script.
+1. Hover over any button to view a tooltip describing what the button does.
+1. To learn how to read and write the language, read the [throne](https://www.github.com/t-mw/throne#readme) documentation and view the examples below.
 
 ## Examples
 
