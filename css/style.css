@@ -2,3 +2,14 @@ html, body, #playground {
   width: 100%;
   height: 100%;
 }
+
+#examples {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  font-family: "Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback";
+}
+
+#examples a {
+  color: #0000EE;
+}
