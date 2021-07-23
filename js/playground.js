@@ -256,7 +256,7 @@ function updateContext(context, inputState, options, editor) {
     context.remove_state_by_first_atom("#update");
   }
   if (appendUpdate) {
-    context.append_state("#update")
+    context.push_state("#update")
   }
   try {
     const keyToCode = (key) => {
@@ -269,7 +269,7 @@ function updateContext(context, inputState, options, editor) {
       }
     };
 
-    context.update(side => {
+    context.update_with_side_input(side => {
       switch (side[0]) {
       case "key-down": return inputState.keysDown[keyToCode(side[1])] === true ? side : null;
       case "key-up": return inputState.keysDown[keyToCode(side[1])] === true ? null : side;
