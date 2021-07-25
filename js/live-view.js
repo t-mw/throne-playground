@@ -174,7 +174,7 @@ function updateVisualLiveView(state, inputState, gridWidth, gridHeight, liveView
   }
   context.stroke();
 
-  context.font = gridCellSize.toString() + "px Droid Sans Mono";
+  context.font = gridCellSize.toString() + 'px "Droid Sans Mono", "monospace", monospace, "Droid Sans Fallback"';
 
   state.forEach(phrase => {
     if (isAtom(phrase[0]) && phrase[0] === "draw" && isAtom(phrase[1])) {
