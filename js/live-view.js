@@ -30,6 +30,12 @@ class LiveView {
     }
 
     const state = context.get_state();
+    const hashes = context.get_state_hashes();
+    state.forEach((phrase, i) => {
+      phrase.hash = hashes[i];
+    });
+    state.sort(compareTokens);
+
     if (enableVisualMode) {
       this.rootEl.classList.add("visual");
       this.canvas = updateVisualLiveView(
@@ -43,12 +49,6 @@ class LiveView {
     } else {
       this.rootEl.classList.remove("visual");
     }
-
-    const hashes = context.get_state_hashes();
-    state.forEach((phrase, i) => {
-      phrase.hash = hashes[i];
-    });
-    state.sort(compareTokens);
 
     updateStateLiveView(state, this.previousState, this.rootEl);
     this.previousState = state;
