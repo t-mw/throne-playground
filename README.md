@@ -1,12 +1,12 @@
 # throne-playground
 
-A web-based editor for the [throne](https://www.github.com/t-mw/throne) programming language, hosted at https://t-mw.github.io/throne-playground/.
+A web-based editor for the [Throne](https://www.github.com/t-mw/throne) programming language, hosted at https://t-mw.github.io/throne-playground/.
 
 ## Usage
 
 1. Press the play button in the bottom right of the page to begin executing a script.
 1. Hover over any button to view a tooltip describing what the button does.
-1. To learn how to read and write the language, read the [throne](https://www.github.com/t-mw/throne#readme) documentation and view the examples below.
+1. To learn how to read and write the language, read the [Throne](https://www.github.com/t-mw/throne#readme) documentation and view the examples below.
 
 ## Examples
 
@@ -18,13 +18,13 @@ A web-based editor for the [throne](https://www.github.com/t-mw/throne) programm
 
 ## Debugging
 
-Although script errors are marked in the editor when they occur, the throne context for your script can also be inspected in more detail through `window.playground.context`.
+Although script errors are marked in the editor when they occur, the context for your script can also be inspected in more detail through `window.playground.context`.
 For example, to print a log of the current state and compiled rules execute `playground.context.print()` in the browser console.
 
 ## Building
 
-1. Clone [throne](https://www.github.com/t-mw/throne) to a directory.
-1. Follow the steps to [build throne for Wasm](https://github.com/t-mw/throne#build-for-wasm).
+1. Clone [Throne](https://www.github.com/t-mw/throne) to a directory.
+1. Follow the steps to [build Throne for WebAssembly](https://github.com/t-mw/throne#build-for-webassembly).
 1. Clone this repository (`throne-playground`) to the same directory as `throne`.
 1. Run `npm install && npm run build` in the `throne-playground` directory.
    - Alternatively run `npm install && npm run start` to launch a local web server for testing.
