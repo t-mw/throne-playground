@@ -10,6 +10,7 @@ A web-based editor for the [Throne](https://www.github.com/t-mw/throne) programm
 
 ## Examples
 
+- [Hello World](https://t-mw.github.io/throne-playground/?gist=t-mw/82fc3037ac96890181162f558074ae6d)
 - [Family](https://t-mw.github.io/throne-playground/?gist=t-mw/a4af79a60704910e44a5ab15476e082e) - demonstrates how variables are matched.
 - [Guessing game](https://t-mw.github.io/throne-playground/?gist=t-mw/c8018c20af9dee55a8de76338ff97467) - introduces [predicates](https://github.com/t-mw/throne#predicates) and the brace [construct](https://github.com/t-mw/throne#constructs).
 - [Draw](https://t-mw.github.io/throne-playground/?gist=t-mw/d829ba2ec22538191418674b301f19bd) - demonstrates the drawing and update loop features of the playground.
