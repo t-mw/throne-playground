@@ -1,2 +1,2 @@
-draw "Hello"
-draw "Hello" = draw "World"
+"Hello"
+"Hello" = "World"

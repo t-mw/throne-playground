@@ -5,10 +5,7 @@ import drawScript from "../examples/draw.throne";
 import gameOfLifeScript from "../examples/game-of-life.throne";
 import blocksScript from "../examples/blocks.throne";
 
-const helloWorld = {
-  script: helloWorldScript,
-  enableVisualMode: true
-};
+const helloWorld = { script: helloWorldScript };
 const family = { script: familyScript };
 const guessingGame = { script: guessingGameScript };
 const draw = {
